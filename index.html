@@ -557,7 +557,8 @@
                     <div class="bg-slate-750 p-3 rounded-lg border border-cyan-700/50">
                         <label class="block font-semibold mb-2 text-cyan-300">🔲 切換玻片標本</label>
                         <select id="specimen-select">
-                            <option value="letter">字母 P（認識上下左右顛倒）</option>
+                            <option value="letter-p">字母 P（認識上下左右顛倒）</option>
+                            <option value="letter-f">字母 F（比較倒像方向）</option>
                             <option value="pond">池水（矽藻＋草履蟲）</option>
                         </select>
                         <p id="specimen-hint" class="mt-2 text-xs text-slate-400">目前：P 字玻片。目鏡視野會看到上下左右顛倒的「d」。</p>
@@ -656,7 +657,7 @@
                     <!-- P字母視野 -->
                     <div id="view-container" class="absolute transition-transform duration-75 ease-out" style="transform:translate(0px,0px);">
                         <div id="specimen-graphic" class="text-white font-serif select-none font-bold">
-                            <span class="specimen-inverted text-7xl">P</span>
+                            <span id="specimen-letter" class="specimen-inverted text-7xl">P</span>
                         </div>
                     </div>
                     <!-- 池水視野 Canvas -->
@@ -798,7 +799,12 @@
             slideX: 60,
             slideY: -50,
             taskProgress: [false, false, false, false],
-            specimen: 'letter' // 'letter' | 'pond'
+            specimen: 'letter-p' // 'letter-p' | 'letter-f' | 'pond'
+        };
+
+        const LETTER_SPECIMENS = {
+            'letter-p': { label: 'P', viewHint: '目前：P 字玻片。目鏡視野會看到上下左右顛倒的「d」。' },
+            'letter-f': { label: 'F', viewHint: '目前：F 字玻片。目鏡視野會看到上下左右顛倒後的 F。' }
         };
 
         const focusTargets = {
@@ -831,6 +837,7 @@
             darkOverlay: document.getElementById('dark-overlay'),
             totalMag: document.getElementById('total-mag'),
             focusStatus: document.getElementById('focus-status'),
+            specimenLetter: document.getElementById('specimen-letter'),
             resetBtn: document.getElementById('reset-btn'),
             coarseWarning: document.getElementById('coarse-warning'),
             toast: document.getElementById('toast'),
@@ -1260,6 +1267,7 @@
         // ═══════════════════════════════════════════════════════
         function switchSpecimen(val) {
             state.specimen = val;
+            const letterSpecimen = LETTER_SPECIMENS[val];
 
             if (trackerState.running) {
                 trackerState.running = false;
@@ -1267,14 +1275,15 @@
                 dom.trackerStart.textContent = '開始挑戰';
             }
 
-            if (val === 'letter') {
+            if (letterSpecimen) {
                 stopPondLoop();
                 dom.viewContainer.classList.remove('hidden');
                 dom.pondCanvas.classList.add('hidden');
                 dom.trackingRing.classList.add('hidden');
                 dom.trackerPanel.classList.add('hidden');
                 dom.hintCardPond.classList.add('hidden');
-                dom.specimenHint.textContent = '目前：P 字玻片。目鏡視野會看到上下左右顛倒的「d」。';
+                dom.specimenLetter.textContent = letterSpecimen.label;
+                dom.specimenHint.textContent = letterSpecimen.viewHint;
                 dom.pondCanvas.classList.add('slide-swap');
                 dom.viewContainer.classList.add('slide-swap');
                 setTimeout(() => {
@@ -1459,7 +1468,7 @@
             }
 
             // ── P 字母視野 ──
-            if (state.specimen === 'letter') {
+            if (state.specimen !== 'pond') {
                 const viewX = -state.slideX * target.scale;
                 const viewY = -state.slideY * target.scale;
                 const specimenBrightness = 0.35 + lightLevel * 0.9;
@@ -1687,7 +1696,7 @@
             state.slideX = 60;
             state.slideY = -50;
             state.taskProgress = [false, false, false, false];
-            state.specimen = 'letter';
+            state.specimen = 'letter-p';
             dom.coarseSlider.value = state.coarse;
             dom.fineSlider.value = state.fine;
             dom.apertureSelect.value = state.aperture;
@@ -1696,10 +1705,10 @@
             dom.fineVal.innerText = state.fine;
             dom.posX.innerText = state.slideX;
             dom.posY.innerText = state.slideY;
-            dom.specimenSelect.value = 'letter';
+            dom.specimenSelect.value = 'letter-p';
             hideCoarseWarning();
             stopPondLoop();
-            switchSpecimen('letter');
+            switchSpecimen('letter-p');
             setObjective('10x', { silent: true });
             // 重置追蹤狀態
             trackerState.running = false;
