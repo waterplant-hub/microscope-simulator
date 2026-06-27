@@ -458,13 +458,49 @@
             font-size: 12px;
             line-height: 1.35;
         }
+        .code-token {
+            font-weight: 800;
+            white-space: nowrap;
+        }
+        .code-a, .code-y, .code-c2 {
+            color: #38bdf8;
+        }
+        .code-b, .code-b1, .code-b2 {
+            color: #34d399;
+        }
+        .code-c1 {
+            color: #fbbf24;
+        }
+        .code-x, .code-stage, .code-base, .code-arm {
+            color: #cbd5e1;
+        }
+        .device-note {
+            color: #94a3b8;
+            font-size: 12px;
+            margin-top: 2px;
+        }
+        .lens-start-hint {
+            margin-top: 8px;
+            border: 1px solid rgba(52, 211, 153, 0.35);
+            border-radius: 8px;
+            background: rgba(6, 95, 70, 0.18);
+            color: #a7f3d0;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 7px 9px;
+            text-align: center;
+            transition: opacity .18s ease;
+        }
     </style>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen font-sans pb-12">
 
     <header class="bg-slate-800 border-b border-slate-700 py-4 px-6 mb-8 shadow-md">
         <div class="max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
-            <h1 class="text-2xl font-bold text-white">複式顯微鏡操作模擬器 <span class="text-sm text-slate-400 font-mono">v1.3</span></h1>
+            <div>
+                <h1 class="text-2xl font-bold text-white">複式顯微鏡操作模擬器 <span class="text-sm text-slate-400 font-mono">v1.3</span></h1>
+                <div class="device-note">建議平板橫向或電腦操作</div>
+            </div>
             <button id="reset-btn" class="bg-rose-600 hover:bg-rose-500 text-white font-semibold px-4 py-2 rounded-lg shadow transition flex items-center gap-2 cursor-pointer">
                 <span>🔄</span> 重置設定
             </button>
@@ -513,15 +549,15 @@
                         <circle id="svg-c1" cx="152" cy="240" r="16" fill="#334155" stroke="#64748b" stroke-width="2" stroke-dasharray="4 2"/>
                         <line x1="152" y1="226" x2="152" y2="254" stroke="#475569" stroke-width="1.5" stroke-dasharray="2 2"/>
                         <line x1="138" y1="240" x2="166" y2="240" stroke="#475569" stroke-width="1.5" stroke-dasharray="2 2"/>
-                        <text x="171" y="244" fill="#94a3b8" font-size="11" font-weight="bold">C1</text>
+                        <text x="171" y="244" fill="#fbbf24" stroke="#0f172a" stroke-width="0.7" paint-order="stroke" font-size="11" font-weight="bold">C1</text>
                         <title>C1 粗調節輪 — 快速升降載物台，僅低倍使用</title>
                         <circle id="svg-c2" cx="152" cy="215" r="10" fill="#475569" stroke="#94a3b8" stroke-width="2" stroke-dasharray="3 1"/>
                         <line x1="152" y1="207" x2="152" y2="223" stroke="#64748b" stroke-width="1" stroke-dasharray="2 2"/>
                         <line x1="144" y1="215" x2="160" y2="215" stroke="#64748b" stroke-width="1" stroke-dasharray="2 2"/>
-                        <text x="165" y="219" fill="#94a3b8" font-size="11" font-weight="bold">C2</text>
+                        <text x="165" y="219" fill="#38bdf8" stroke="#0f172a" stroke-width="0.7" paint-order="stroke" font-size="11" font-weight="bold">C2</text>
                         <title>C2 細調節輪 — 微調焦距，高倍時專用</title>
-                        <text x="62" y="162" fill="#94a3b8" font-size="11" font-weight="bold">B1</text>
-                        <text x="143" y="202" fill="#94a3b8" font-size="11" font-weight="bold">B2</text>
+                        <text x="73" y="148" fill="#34d399" stroke="#0f172a" stroke-width="0.8" paint-order="stroke" font-size="12" font-weight="bold">B1</text>
+                        <text x="50" y="181" fill="#34d399" stroke="#0f172a" stroke-width="0.8" paint-order="stroke" font-size="12" font-weight="bold">B2</text>
                         <title>B1/B2 物鏡轉盤 — 切換不同倍率物鏡</title>
                         <g id="svg-nosepiece">
                             <path d="M 66 158 Q 105 143 144 158 L 140 172 Q 105 190 70 172 Z" fill="#cbd5e1" stroke="#0f172a" stroke-width="2"/>
@@ -566,28 +602,29 @@
                     </div>
 
                     <div class="bg-slate-750 p-3 rounded-lg border border-slate-700">
-                        <label class="block font-semibold mb-2 text-emerald-400">【B1/B2】切換物鏡倍率</label>
+                        <label class="block font-semibold mb-2 text-emerald-400"><span class="code-token code-b">【B1/B2】</span>切換物鏡倍率</label>
                         <div class="grid grid-cols-3 gap-2">
                             <button id="lens-4x" class="py-2 px-1 rounded font-bold bg-emerald-600 text-white shadow ring-2 ring-emerald-400 cursor-pointer text-xs">4X (低倍)</button>
                             <button id="lens-10x" class="py-2 px-1 rounded font-bold bg-slate-700 hover:bg-slate-600 text-slate-300 cursor-pointer text-xs">10X (中倍)</button>
                             <button id="lens-60x" class="py-2 px-1 rounded font-bold bg-slate-700 hover:bg-slate-600 text-slate-300 cursor-pointer text-xs">60X (高倍)</button>
                         </div>
+                        <div id="start-lens-hint" class="lens-start-hint">請先轉回 4X 低倍開始找像。</div>
                     </div>
 
                     <div>
                         <div class="flex justify-between mb-1">
-                            <label for="coarse-slider" class="font-semibold text-amber-400">【C1】粗調節輪</label>
+                            <label for="coarse-slider" class="font-semibold text-amber-400"><span class="code-token code-c1">【C1】</span>粗調節輪</label>
                             <span id="coarse-val" class="text-slate-400 font-mono">0</span>
                         </div>
                         <input type="range" id="coarse-slider" min="0" max="100" value="0" class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-amber-500">
                         <div id="coarse-warning" class="coarse-warning mt-2 rounded-lg border border-rose-500/50 bg-rose-950/50 p-2 text-xs font-semibold text-rose-200">
-                            ⚠️ 高倍物鏡下【C1】粗調節輪僅供參考，建議改用【C2】細調節輪微調，避免物鏡撞到玻片。
+                            ⚠️ 高倍物鏡下<span class="code-token code-c1">【C1】</span>粗調節輪僅供參考，建議改用<span class="code-token code-c2">【C2】</span>細調節輪微調，避免物鏡撞到玻片。
                         </div>
                     </div>
 
                     <div>
                         <div class="flex justify-between mb-1">
-                            <label for="fine-slider" class="font-semibold text-sky-400">【C2】細調節輪</label>
+                            <label for="fine-slider" class="font-semibold text-sky-400"><span class="code-token code-c2">【C2】</span>細調節輪</label>
                             <span id="fine-val" class="text-slate-400 font-mono">20</span>
                         </div>
                         <input type="range" id="fine-slider" min="0" max="100" value="20" class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-sky-500">
@@ -595,7 +632,7 @@
 
                     <div class="grid grid-cols-2 gap-3">
                         <div>
-                            <label for="aperture-select" class="block font-semibold mb-1 text-slate-300">【X】光圈大小</label>
+                            <label for="aperture-select" class="block font-semibold mb-1 text-slate-300"><span class="code-token code-x">【X】</span>光圈大小</label>
                             <select id="aperture-select" class="w-full bg-slate-700 border border-slate-600 rounded p-1 text-white">
                                 <option value="1">1 號小光圈</option>
                                 <option value="2">2 號光圈</option>
@@ -605,7 +642,7 @@
                             </select>
                         </div>
                         <div>
-                            <label for="mirror-slider" class="block font-semibold mb-1 text-slate-300">【Y】反光鏡角度</label>
+                            <label for="mirror-slider" class="block font-semibold mb-1 text-slate-300"><span class="code-token code-y">【Y】</span>反光鏡角度</label>
                             <input type="range" id="mirror-slider" min="0" max="90" value="10" class="w-full h-6 accent-sky-400">
                         </div>
                     </div>
@@ -649,7 +686,7 @@
 
             <!-- 目鏡視野 -->
             <div class="bg-slate-800 rounded-2xl p-6 border border-slate-700 shadow-xl flex flex-col items-center gap-4">
-                <h2 class="text-xl font-bold text-center w-full border-b border-slate-700 pb-2 text-sky-400">👁️ 【A】目鏡觀察視野</h2>
+                <h2 class="text-xl font-bold text-center w-full border-b border-slate-700 pb-2 text-sky-400">👁️ <span class="code-token code-a">【A】</span>目鏡觀察視野</h2>
 
                 <div class="eyepiece-circle flex justify-center items-center" id="eyepiece-circle">
                     <!-- v1.3 光暈圖層 -->
@@ -675,7 +712,7 @@
                     </div>
                     <!-- 黑暗遮罩 -->
                     <div id="dark-overlay" class="absolute inset-0 bg-black flex justify-center items-center p-4 text-center text-slate-500 text-sm">
-                        一片黑暗<br>請先調整【X】光圈與【Y】反光鏡對光
+                        一片黑暗<br>請先調整<span class="code-token code-x">【X】</span>光圈與<span class="code-token code-y">【Y】</span>反光鏡對光
                     </div>
                 </div>
 
@@ -736,14 +773,14 @@
                         <span class="task-checkbox text-lg">⬜</span>
                         <div>
                             <p class="font-semibold text-slate-200">1. 完成對光（解決一片黑暗）</p>
-                            <p class="text-xs">方法：將【X】光圈調至 4 或 5 號，並將【Y】反光鏡拉至 35~55 度之間。</p>
+                            <p class="text-xs">方法：將<span class="code-token code-x">【X】</span>光圈調至 4 或 5 號，並將<span class="code-token code-y">【Y】</span>反光鏡拉至 35~55 度之間。</p>
                         </div>
                     </li>
                     <li id="task-2" class="flex items-start gap-3 bg-slate-750 p-2.5 rounded border border-slate-700 text-slate-400">
                         <span class="task-checkbox text-lg">⬜</span>
                         <div>
                             <p class="font-semibold text-slate-200">2. 低倍率對焦（尋找標本影像）</p>
-                            <p class="text-xs">方法：先切換至 4X 低倍，再轉動【C1】粗調節輪至數值 45~55 之間使其現形。</p>
+                            <p class="text-xs">方法：先切換至 4X 低倍，再轉動<span class="code-token code-c1">【C1】</span>粗調節輪至數值 45~55 之間使其現形。</p>
                         </div>
                     </li>
                     <li id="task-3" class="flex items-start gap-3 bg-slate-750 p-2.5 rounded border border-slate-700 text-slate-400">
@@ -757,7 +794,7 @@
                         <span class="task-checkbox text-lg">⬜</span>
                         <div>
                             <p class="font-semibold text-slate-200">4. 高倍率細微觀察</p>
-                            <p class="text-xs">方法：切換至 10X 或 60X 物鏡，此時若操作粗調節輪會出現警告，請改用【C2】細調節輪調至清晰。</p>
+                            <p class="text-xs">方法：切換至 10X 或 60X 物鏡，此時若操作粗調節輪會出現警告，請改用<span class="code-token code-c2">【C2】</span>細調節輪調至清晰。</p>
                         </div>
                     </li>
                 </ul>
@@ -821,6 +858,7 @@
             lens4x: document.getElementById('lens-4x'),
             lens10x: document.getElementById('lens-10x'),
             lens60x: document.getElementById('lens-60x'),
+            startLensHint: document.getElementById('start-lens-hint'),
             coarseSlider: document.getElementById('coarse-slider'),
             coarseVal: document.getElementById('coarse-val'),
             fineSlider: document.getElementById('fine-slider'),
@@ -1114,6 +1152,48 @@
             dom.coarseWarning.style.display = 'none';
         }
 
+        function escapeHtml(text) {
+            return String(text).replace(/[&<>"']/g, ch => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;'
+            }[ch]));
+        }
+
+        function formatCodes(text) {
+            const map = {
+                '@@B@@': '<span class="code-token code-b">【B1/B2】</span>',
+                '@@B1@@': '<span class="code-token code-b1">【B1】</span>',
+                '@@B2@@': '<span class="code-token code-b2">【B2】</span>',
+                '@@COARSE@@': '<span class="code-token code-c1">【C1】</span>',
+                '@@FINE@@': '<span class="code-token code-c2">【C2】</span>',
+                '@@A@@': '<span class="code-token code-a">【A】</span>',
+                '@@X@@': '<span class="code-token code-x">【X】</span>',
+                '@@Y@@': '<span class="code-token code-y">【Y】</span>',
+                '@@ARM@@': '<span class="code-token code-arm">【甲】</span>',
+                '@@BASE@@': '<span class="code-token code-base">【丙】</span>'
+            };
+            let html = escapeHtml(text)
+                .replace(/【B1\/B2】/g, '@@B@@')
+                .replace(/【B1】/g, '@@B1@@')
+                .replace(/【B2】/g, '@@B2@@')
+                .replace(/【C1】/g, '@@COARSE@@')
+                .replace(/【C2】/g, '@@FINE@@')
+                .replace(/【A】/g, '@@A@@')
+                .replace(/【X】/g, '@@X@@')
+                .replace(/【Y】/g, '@@Y@@')
+                .replace(/【甲】/g, '@@ARM@@')
+                .replace(/【丙】/g, '@@BASE@@')
+                .replace(/C1/g, '<span class="code-token code-c1">C1</span>')
+                .replace(/C2/g, '<span class="code-token code-c2">C2</span>');
+            Object.entries(map).forEach(([key, value]) => {
+                html = html.split(key).join(value);
+            });
+            return html;
+        }
+
         // ═══════════════════════════════════════════════════════
         // 5. 渲染迴圈（池水）
         // ═══════════════════════════════════════════════════════
@@ -1390,6 +1470,10 @@
             dom.svgLens60x.setAttribute('opacity', '0.4');
             dom.svgLens60x.classList.remove('active');
 
+            if (dom.startLensHint) {
+                dom.startLensHint.classList.toggle('hidden', mag === '4x' || state.taskProgress[1]);
+            }
+
             if (mag === '4x') { dom.svgLens4x.setAttribute('opacity', '1');
                 dom.svgLens4x.classList.add('active');
                 dom.totalMag.innerText = '40X'; }
@@ -1451,7 +1535,7 @@
             if (darkness > 0.04) {
                 dom.darkOverlay.style.display = 'flex';
                 dom.darkOverlay.style.backgroundColor = `rgba(0,0,0,${darkness})`;
-                dom.darkOverlay.innerHTML = hasAnyLight ? '' : '一片黑暗<br>請先調整【X】光圈與【Y】反光鏡對光';
+                dom.darkOverlay.innerHTML = hasAnyLight ? '' : `一片黑暗<br>請先調整${formatCodes('【X】')}光圈與${formatCodes('【Y】')}反光鏡對光`;
             } else {
                 dom.darkOverlay.style.display = 'none';
                 dom.darkOverlay.innerHTML = '';
@@ -1514,12 +1598,12 @@
                 } else if (blurAmount < 8) {
                     dom.focusStatus.innerText = '快對焦了！隱約可見生物輪廓';
                     dom.focusStatus.className = 'text-amber-400 font-medium';
-                    dom.pondHint.innerText = '繼續微調C2細調節輪，等影像清晰後再開始追蹤草履蟲！';
+                    dom.pondHint.innerHTML = formatCodes('繼續微調C2細調節輪，等影像清晰後再開始追蹤草履蟲！');
                     dom.pondHint.className = 'mt-2 rounded-lg bg-amber-950/40 px-3 py-2 text-center text-amber-200';
                 } else {
                     dom.focusStatus.innerText = blurAmount > 18 ? '一片空白（焦距差距太大）' : '影像模糊，繼續調節中';
                     dom.focusStatus.className = 'text-slate-400 text-xs';
-                    dom.pondHint.innerText = '先用4X物鏡＋C1粗調節輪找到影像，再依序升倍觀察。';
+                    dom.pondHint.innerHTML = formatCodes('先用4X物鏡＋C1粗調節輪找到影像，再依序升倍觀察。');
                     dom.pondHint.className = 'mt-2 rounded-lg bg-slate-900/60 px-3 py-2 text-center text-slate-300';
                 }
                 // 追蹤圈顏色在 renderPond 中更新
@@ -1594,16 +1678,16 @@
                 while (next === currentChallengeIndex) next = Math.floor(Math.random() * challenges.length);
             currentChallengeIndex = next;
             const ch = challenges[next];
-            dom.challengeQuestion.innerText = ch.question;
+            dom.challengeQuestion.innerHTML = formatCodes(ch.question);
             dom.challengeAnswers.innerHTML = '';
-            dom.challengeFeedback.innerText = '選出最適合的處理方式。';
+            dom.challengeFeedback.innerHTML = '選出最適合的處理方式。';
             dom.challengeFeedback.className = 'mt-3 min-h-10 rounded-lg border border-slate-700 bg-slate-900/60 p-3 text-center text-xs text-slate-300';
             ch.answers.forEach((ans, i) => {
                 const btn = document.createElement('button');
                 btn.type = 'button';
                 btn.className =
                     'challenge-btn rounded-lg border border-slate-600 bg-slate-700/70 px-3 py-2 text-left text-xs font-semibold text-slate-100 hover:border-sky-400 hover:bg-slate-700 cursor-pointer';
-                btn.innerText = ans;
+                btn.innerHTML = formatCodes(ans);
                 btn.addEventListener('click', () => checkChallengeAnswer(i));
                 dom.challengeAnswers.appendChild(btn);
             });
@@ -1619,10 +1703,10 @@
                     'rounded-lg border border-emerald-500 bg-emerald-950/50 px-3 py-2 text-left text-xs font-semibold text-emerald-100';
             });
             if (idx === ch.correct) {
-                dom.challengeFeedback.innerText = `答對了。${ch.explain}`;
+                dom.challengeFeedback.innerHTML = formatCodes(`答對了。${ch.explain}`);
                 dom.challengeFeedback.className = 'mt-3 min-h-10 rounded-lg border border-emerald-600/70 bg-emerald-950/50 p-3 text-center text-xs text-emerald-100';
             } else {
-                dom.challengeFeedback.innerText = `再修正一下：${ch.explain}`;
+                dom.challengeFeedback.innerHTML = formatCodes(`再修正一下：${ch.explain}`);
                 dom.challengeFeedback.className = 'mt-3 min-h-10 rounded-lg border border-rose-600/70 bg-rose-950/50 p-3 text-center text-xs text-rose-100';
                 if (btns[idx]) btns[idx].className =
                     'rounded-lg border border-rose-500 bg-rose-950/50 px-3 py-2 text-left text-xs font-semibold text-rose-100';
