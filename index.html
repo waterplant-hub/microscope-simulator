@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>複式顯微鏡操作模擬器 v1.2</title>
+    <title>複式顯微鏡操作模擬器 v1.3</title>
     <style>
         *, *::before, *::after { box-sizing: border-box; }
         html { line-height: 1.5; -webkit-text-size-adjust: 100%; }
@@ -82,6 +82,7 @@
         [class~="gap-4"] { gap: 1rem; }
         [class~="gap-6"] { gap: 1.5rem; }
         [class~="gap-8"] { gap: 2rem; }
+        [class~="gap-12"] { gap: 3rem; }
         [class~="grid-cols-1"] { grid-template-columns: repeat(1, minmax(0, 1fr)); }
         [class~="grid-cols-2"] { grid-template-columns: repeat(2, minmax(0, 1fr)); }
         [class~="grid-cols-3"] { grid-template-columns: repeat(3, minmax(0, 1fr)); }
@@ -463,7 +464,7 @@
 
     <header class="bg-slate-800 border-b border-slate-700 py-4 px-6 mb-8 shadow-md">
         <div class="max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
-            <h1 class="text-2xl font-bold text-white">複式顯微鏡操作模擬器 <span class="text-sm text-slate-400 font-mono">v1.2</span></h1>
+            <h1 class="text-2xl font-bold text-white">複式顯微鏡操作模擬器 <span class="text-sm text-slate-400 font-mono">v1.3</span></h1>
             <button id="reset-btn" class="bg-rose-600 hover:bg-rose-500 text-white font-semibold px-4 py-2 rounded-lg shadow transition flex items-center gap-2 cursor-pointer">
                 <span>🔄</span> 重置設定
             </button>
@@ -651,7 +652,7 @@
                 <h2 class="text-xl font-bold text-center w-full border-b border-slate-700 pb-2 text-sky-400">👁️ 【A】目鏡觀察視野</h2>
 
                 <div class="eyepiece-circle flex justify-center items-center" id="eyepiece-circle">
-                    <!-- v1.2 光暈圖層 -->
+                    <!-- v1.3 光暈圖層 -->
                     <div id="glow-overlay"></div>
 
                     <!-- P字母視野 -->
@@ -662,7 +663,7 @@
                     </div>
                     <!-- 池水視野 Canvas -->
                     <canvas id="pond-canvas" width="280" height="280" class="hidden"></canvas>
-                    <!-- 追蹤圈（池水模式） v1.2 動態變色 -->
+                    <!-- 追蹤圈（池水模式） v1.3 動態變色 -->
                     <svg id="tracking-ring" class="hidden absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 280 280">
                         <circle id="tracking-circle" cx="140" cy="140" r="36" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="1.5" stroke-dasharray="4 4" />
                         <circle cx="140" cy="140" r="2" fill="rgba(255,255,255,0.4)" />
@@ -686,7 +687,7 @@
                     </h3>
                     <div class="flex flex-col items-center gap-1">
                         <button id="move-up" class="w-12 h-10 bg-slate-700 hover:bg-slate-600 active:bg-emerald-600 rounded-t-lg font-bold text-lg cursor-pointer shadow">▲</button>
-                        <div class="flex gap-8">
+                        <div class="flex gap-12">
                             <button id="move-left" class="w-12 h-10 bg-slate-700 hover:bg-slate-600 active:bg-emerald-600 rounded-l-lg font-bold text-lg cursor-pointer shadow">◀</button>
                             <button id="move-right" class="w-12 h-10 bg-slate-700 hover:bg-slate-600 active:bg-emerald-600 rounded-r-lg font-bold text-lg cursor-pointer shadow">▶</button>
                         </div>
@@ -777,7 +778,7 @@
 
         </div>
     </main>
-    <footer class="footer-credit">© 2026 林顯豪規劃設計｜複式顯微鏡操作模擬器｜v1.2 課堂測試版</footer>
+    <footer class="footer-credit">© 2026 林顯豪規劃設計｜複式顯微鏡操作模擬器｜v1.3 課堂測試版</footer>
 
     <script>
         // ═══════════════════════════════════════════════════════
@@ -785,7 +786,7 @@
         // ═══════════════════════════════════════════════════════
         const APP_META = {
             title: '複式顯微鏡操作模擬器',
-            version: 'v1.2',
+            version: 'v1.3',
             designer: '林顯豪',
             copyright: '© 2026'
         };
@@ -890,8 +891,8 @@
             }));
         })();
 
-        const NUM_PARA = 3;
-        const PARA_SIZE_VARIANTS = [18, 21, 24];
+        const NUM_PARA = 6;
+        const PARA_SIZE_VARIANTS = [18, 19.2, 20.4, 21.6, 22.8, 24];
         const paramecia = Array.from({ length: NUM_PARA }, (_, i) => ({
             x: (Math.random() - 0.5) * 120,
             y: (Math.random() - 0.5) * 120,
@@ -902,7 +903,7 @@
             speed: 0.6 + Math.random() * 0.3
         }));
 
-        const PARA_SPEED = { '4x': 0.035, '10x': 0.07, '60x': 0.12 };
+        const PARA_SPEED = { '4x': 0.042, '10x': 0.084, '60x': 0.144 };
         const POND_SCALE = { '4x': 1, '10x': 2.2, '60x': 5 };
         const BIO_SCALE = { '4x': 0.45, '10x': 1, '60x': 6 };
 
@@ -924,13 +925,13 @@
             ctx.save();
             ctx.translate(sx, sy);
             ctx.rotate(d.angle);
-            ctx.strokeStyle = 'rgba(160,230,200,0.85)';
+            ctx.strokeStyle = 'rgba(74,180,120,0.58)';
             ctx.lineWidth = 0.8 * Math.max(1, bioSc * 0.3);
 
             if (d.type === 0) {
                 ctx.beginPath();
                 ctx.ellipse(0, 0, sw / 2, sh / 2, 0, 0, Math.PI * 2);
-                ctx.fillStyle = 'rgba(100,200,160,0.18)';
+                ctx.fillStyle = 'rgba(72,190,120,0.18)';
                 ctx.fill();
                 ctx.stroke();
                 const n = Math.floor(sw / 3);
@@ -939,7 +940,7 @@
                     ctx.beginPath();
                     ctx.moveTo(px, -sh / 2 * 0.8);
                     ctx.lineTo(px, sh / 2 * 0.8);
-                    ctx.globalAlpha = 0.35;
+                    ctx.globalAlpha = 0.28;
                     ctx.stroke();
                     ctx.globalAlpha = 1;
                 }
@@ -950,13 +951,13 @@
                 ctx.quadraticCurveTo(sw / 2, -sh / 2, sw / 2, 0);
                 ctx.quadraticCurveTo(sw / 2, sh / 2, 0, sh / 2);
                 ctx.quadraticCurveTo(-sw / 2, sh / 2, -sw / 2, 0);
-                ctx.fillStyle = 'rgba(80,180,140,0.15)';
+                ctx.fillStyle = 'rgba(72,190,120,0.16)';
                 ctx.fill();
                 ctx.stroke();
                 ctx.beginPath();
                 ctx.moveTo(-sw / 2 * 0.8, 0);
                 ctx.lineTo(sw / 2 * 0.8, 0);
-                ctx.globalAlpha = 0.5;
+                ctx.globalAlpha = 0.34;
                 ctx.stroke();
                 ctx.globalAlpha = 1;
             } else {
@@ -966,7 +967,7 @@
                 ctx.lineTo(0, sh / 2);
                 ctx.lineTo(-sw / 2, 0);
                 ctx.closePath();
-                ctx.fillStyle = 'rgba(120,210,180,0.15)';
+                ctx.fillStyle = 'rgba(72,190,120,0.17)';
                 ctx.fill();
                 ctx.stroke();
             }
@@ -983,25 +984,25 @@
             ctx.translate(sx, sy);
             ctx.rotate(p.angle + Math.PI / 2);
 
-            const alpha = Math.max(0.1, 1 - blur / 20);
+            const alpha = Math.max(0.12, 0.72 - blur / 26);
             ctx.globalAlpha = alpha;
 
             ctx.beginPath();
             ctx.ellipse(0, 0, sz * 0.38, sz * 0.5, 0, 0, Math.PI * 2);
-            ctx.fillStyle = 'rgba(180,220,255,0.22)';
+            ctx.fillStyle = 'rgba(235,238,240,0.26)';
             ctx.fill();
-            ctx.strokeStyle = 'rgba(140,200,255,0.9)';
-            ctx.lineWidth = 1.2;
+            ctx.strokeStyle = 'rgba(82,96,112,0.9)';
+            ctx.lineWidth = 1.1 * Math.max(1, bioSc * 0.22);
             ctx.stroke();
 
             ctx.beginPath();
             ctx.ellipse(0, 0, sz * 0.14, sz * 0.18, 0, 0, Math.PI * 2);
-            ctx.fillStyle = 'rgba(200,240,255,0.5)';
+            ctx.fillStyle = 'rgba(245,245,245,0.32)';
             ctx.fill();
 
             if (bioSc >= 1) {
                 const cLen = sz * 0.18 * (bioSc >= 6 ? 1 : 0.45);
-                ctx.strokeStyle = 'rgba(140,200,255,0.45)';
+                ctx.strokeStyle = 'rgba(92,105,120,0.5)';
                 ctx.lineWidth = 0.6;
                 for (let a = 0; a < Math.PI * 2; a += Math.PI / 7) {
                     const ex = Math.cos(a) * sz * 0.38,
@@ -1127,9 +1128,9 @@
                 H = 280;
 
             const bright = getLightLevel();
-            const r = Math.round(5 + bright * 32),
-                g = Math.round(10 + bright * 62),
-                b = Math.round(9 + bright * 45);
+            const r = Math.round(10 + bright * 190),
+                g = Math.round(18 + bright * 212),
+                b = Math.round(30 + bright * 225);
             pondCtx.fillStyle = `rgb(${r},${g},${b})`;
             pondCtx.fillRect(0, 0, W, H);
 
@@ -1738,7 +1739,7 @@
         updateUI();
 
         // 若有池水模式，啟動迴圈（但初始為 letter，所以不啟動）
-        console.log('🔬 複式顯微鏡模擬器 v1.2 已啟動');
+        console.log('🔬 複式顯微鏡模擬器 v1.3 已啟動');
     </script>
 </body>
 </html>
