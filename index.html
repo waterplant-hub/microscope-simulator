@@ -1063,6 +1063,10 @@
             return state.aperture >= 4 && state.mirror >= 35 && state.mirror <= 55;
         }
 
+        function isMirrorAligned() {
+            return state.mirror >= 35 && state.mirror <= 55;
+        }
+
         function currentBlur() {
             const target = focusTargets[state.lens];
             const cd = Math.abs(state.coarse - target.coarse);
@@ -1078,10 +1082,11 @@
         }
 
         function getLightLevel() {
-            // 0~1 之間，對光程度
-            const a = (state.aperture - 1) / 4; // 0~1
-            const m = Math.max(0, Math.min(1, (state.mirror - 30) / 25)); // 30~55 最佳
-            return Math.min(1, a * 0.6 + m * 0.6);
+            // 0~1 之間的視野亮度。反光鏡沒有對準時仍接近全黑；對準後由五級光圈決定灰度。
+            const apertureLevels = [0, 0.05, 0.18, 0.38, 0.68, 1];
+            const apertureLight = apertureLevels[state.aperture] ?? 0;
+            const mirrorLight = isMirrorAligned() ? 1 : Math.max(0, 1 - Math.abs(state.mirror - 45) / 32) * 0.18;
+            return Math.max(0, Math.min(1, apertureLight * mirrorLight));
         }
 
         let toastTimer = null;
@@ -1114,14 +1119,14 @@
             const W = 280,
                 H = 280;
 
-            const bright = isLightOk() ? 1 : 0;
-            const r = Math.round(8 + bright * 18),
-                g = Math.round(20 + bright * 40),
-                b = Math.round(15 + bright * 25);
+            const bright = getLightLevel();
+            const r = Math.round(5 + bright * 32),
+                g = Math.round(10 + bright * 62),
+                b = Math.round(9 + bright * 45);
             pondCtx.fillStyle = `rgb(${r},${g},${b})`;
             pondCtx.fillRect(0, 0, W, H);
 
-            if (!bright) { pondAnimFrame = requestAnimationFrame(renderPond); return; }
+            if (bright <= 0.01) { pondAnimFrame = requestAnimationFrame(renderPond); return; }
 
             const blurPx = currentBlur();
             const ox = 140 - state.slideX * sc;
@@ -1400,6 +1405,8 @@
         // ═══════════════════════════════════════════════════════
         function updateUI() {
             const isLight = isLightOk();
+            const lightLevel = getLightLevel();
+            const hasAnyLight = lightLevel > 0.01;
             const blurAmount = currentBlur();
             const isClear = blurAmount === 0;
             const target = focusTargets[state.lens];
@@ -1419,7 +1426,6 @@
             dom.stageSlideDemo.style.transform = `translate(${state.slideX * 0.28}px, ${state.slideY * 0.18}px)`;
 
             // ── 光暈效果 ──
-            const lightLevel = getLightLevel();
             if (isLight && lightLevel > 0.3) {
                 const size = 40 + lightLevel * 60; // 40~100%
                 const alpha = 0.15 + lightLevel * 0.35;
@@ -1430,10 +1436,18 @@
                 dom.glowOverlay.classList.remove('active');
             }
 
-            // ── 黑暗遮罩 ──
-            if (!isLight) {
+            // ── 視野亮度遮罩：光圈 1~5 造成連續灰度變化 ──
+            const darkness = Math.max(0, Math.min(0.97, 0.97 - lightLevel * 0.97));
+            if (darkness > 0.04) {
                 dom.darkOverlay.style.display = 'flex';
-                dom.darkOverlay.style.backgroundColor = `rgba(0,0,0,${1 - (state.aperture*0.1 + (state.mirror/90)*0.1)})`;
+                dom.darkOverlay.style.backgroundColor = `rgba(0,0,0,${darkness})`;
+                dom.darkOverlay.innerHTML = hasAnyLight ? '' : '一片黑暗<br>請先調整【X】光圈與【Y】反光鏡對光';
+            } else {
+                dom.darkOverlay.style.display = 'none';
+                dom.darkOverlay.innerHTML = '';
+            }
+
+            if (!hasAnyLight) {
                 dom.focusStatus.innerText = '一片黑暗！請確認光圈與反光鏡對光機制';
                 dom.focusStatus.className = 'text-rose-400 font-semibold';
                 if (state.specimen === 'pond') {
@@ -1443,17 +1457,24 @@
                 updateTasks(...state.taskProgress);
                 return;
             }
-            dom.darkOverlay.style.display = 'none';
 
             // ── P 字母視野 ──
             if (state.specimen === 'letter') {
                 const viewX = -state.slideX * target.scale;
                 const viewY = -state.slideY * target.scale;
+                const specimenBrightness = 0.35 + lightLevel * 0.9;
+                const specimenContrast = 0.75 + lightLevel * 0.35;
                 dom.viewContainer.style.transform = `translate(${viewX}px,${viewY}px)`;
-                dom.specimenGraphic.style.filter = `blur(${blurAmount}px)`;
+                dom.specimenGraphic.style.filter = `blur(${blurAmount}px) brightness(${specimenBrightness}) contrast(${specimenContrast})`;
                 dom.specimenGraphic.style.transform = `scale(${target.scale})`;
 
-                if (isClear) {
+                if (lightLevel < 0.2) {
+                    dom.focusStatus.innerText = '光線很暗，物體幾乎看不清楚';
+                    dom.focusStatus.className = 'text-rose-300 font-semibold';
+                } else if (!isLight) {
+                    dom.focusStatus.innerText = '影像偏暗，請調大光圈到 4 或 5 號';
+                    dom.focusStatus.className = 'text-amber-400 font-medium';
+                } else if (isClear) {
                     dom.focusStatus.innerText = '✨ 影像極度清晰！';
                     dom.focusStatus.className = 'text-emerald-400 font-bold animate-pulse';
                 } else if (blurAmount < 8) {
@@ -1465,7 +1486,17 @@
                 }
             } else {
                 // 池水：狀態由 Canvas 繪製，此處僅更新文字提示
-                if (isClear) {
+                if (lightLevel < 0.2) {
+                    dom.focusStatus.innerText = '光線很暗，生物輪廓幾乎看不見';
+                    dom.focusStatus.className = 'text-rose-300 font-semibold';
+                    dom.pondHint.innerText = '光圈太小會讓池水視野接近全黑；請逐步調大光圈觀察亮度差異。';
+                    dom.pondHint.className = 'mt-2 rounded-lg bg-rose-950/40 px-3 py-2 text-center text-rose-200';
+                } else if (!isLight) {
+                    dom.focusStatus.innerText = '影像偏暗，請調大光圈到 4 或 5 號';
+                    dom.focusStatus.className = 'text-amber-400 font-medium';
+                    dom.pondHint.innerText = '目前仍偏暗；光圈越大，池水中的矽藻與草履蟲越容易辨認。';
+                    dom.pondHint.className = 'mt-2 rounded-lg bg-amber-950/40 px-3 py-2 text-center text-amber-200';
+                } else if (isClear) {
                     dom.focusStatus.innerText = '✨ 清晰！可見矽藻紋路與游動的草履蟲';
                     dom.focusStatus.className = 'text-emerald-400 font-bold animate-pulse';
                     dom.pondHint.innerText = '注意草履蟲的移動方向！影像往哪邊跑，玻片就往同一邊推，才能把牠拉回視野中央。';
