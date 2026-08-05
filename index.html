@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>複式顯微鏡操作模擬器 v1.3</title>
+    <title>複式顯微鏡操作模擬器 v1.4</title>
     <style>
         *, *::before, *::after { box-sizing: border-box; }
         html { line-height: 1.5; -webkit-text-size-adjust: 100%; }
@@ -225,14 +225,16 @@
         @media (min-width: 768px) {
             [class~="md:grid-cols-2"] { grid-template-columns: repeat(2, minmax(0, 1fr)); }
         }
-        @media (min-width: 1024px) {
+        @media (min-width: 900px) and (min-height: 650px) {
             [class~="lg:grid-cols-12"] { grid-template-columns: repeat(12, minmax(0, 1fr)); }
             [class~="lg:col-span-7"] { grid-column: span 7 / span 7; }
             [class~="lg:col-span-5"] { grid-column: span 5 / span 5; }
+            .main-shell.main-layout { gap: 12px; }
         }
         .eyepiece-circle {
-            width: 280px;
-            height: 280px;
+            width: min(280px, 100%);
+            height: auto;
+            aspect-ratio: 1;
             border: 8px solid #1e293b;
             border-radius: 50%;
             position: relative;
@@ -244,6 +246,12 @@
         .specimen-inverted {
             transform: rotate(180deg);
             display: inline-block;
+        }
+        .specimen-symbol {
+            font-family: Arial, Helvetica, sans-serif;
+            font-weight: 700;
+            line-height: 1;
+            letter-spacing: 0;
         }
         .stage-transition {
             transition: transform 0.1s ease-out;
@@ -376,6 +384,33 @@
             background: radial-gradient(circle at center, rgba(15, 23, 42, 0.25), rgba(15, 23, 42, 0.72));
             padding: 12px 12px 10px;
         }
+        .stage-move-button {
+            min-height: 48px;
+            touch-action: manipulation;
+        }
+        .stage-arrow-cluster {
+            display: grid;
+            grid-template-columns: repeat(3, 48px);
+            grid-template-rows: repeat(2, 48px);
+            gap: 8px;
+            justify-content: center;
+        }
+        #move-up {
+            grid-column: 2;
+            grid-row: 1;
+        }
+        #move-left {
+            grid-column: 1;
+            grid-row: 2;
+        }
+        #move-down {
+            grid-column: 2;
+            grid-row: 2;
+        }
+        #move-right {
+            grid-column: 3;
+            grid-row: 2;
+        }
         .stage-track {
             position: relative;
             height: 72px;
@@ -491,24 +526,409 @@
             text-align: center;
             transition: opacity .18s ease;
         }
+        .app-header-inner {
+            flex-wrap: wrap;
+        }
+        .ux-mode-tabs {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px;
+            border: 1px solid #475569;
+            border-radius: 8px;
+            background: #0f172a;
+        }
+        .ux-mode-tab {
+            min-height: 38px;
+            padding: 7px 11px;
+            border-radius: 6px;
+            color: #cbd5e1;
+            background: transparent;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .ux-mode-tab:hover {
+            background: #334155;
+        }
+        .ux-mode-tab[aria-pressed="true"] {
+            color: #ecfdf5;
+            background: #047857;
+            box-shadow: inset 0 0 0 1px #34d399;
+        }
+        .header-action-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .header-secondary-button {
+            min-height: 40px;
+            padding: 8px 12px;
+            border: 1px solid #475569;
+            border-radius: 8px;
+            color: #e2e8f0;
+            background: #334155;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .header-secondary-button:hover {
+            background: #475569;
+        }
+        .mission-strip {
+            border-bottom: 1px solid #334155;
+            background: #0f172a;
+        }
+        .mission-strip-inner {
+            max-width: 72rem;
+            min-height: 58px;
+            margin: 0 auto;
+            padding: 9px 1rem;
+            display: grid;
+            grid-template-columns: auto minmax(0, 1fr) auto;
+            align-items: center;
+            gap: 12px;
+        }
+        .mission-label {
+            padding: 3px 8px;
+            border-radius: 5px;
+            color: #a7f3d0;
+            background: rgba(6, 95, 70, 0.42);
+            font-size: 12px;
+            font-weight: 800;
+        }
+        .mission-copy {
+            min-width: 0;
+        }
+        .mission-copy strong {
+            display: block;
+            color: #f8fafc;
+            font-size: 14px;
+        }
+        .mission-copy span {
+            display: block;
+            margin-top: 1px;
+            color: #94a3b8;
+            font-size: 12px;
+        }
+        .mission-actions {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+        .mission-button {
+            min-height: 36px;
+            padding: 6px 10px;
+            border: 1px solid #475569;
+            border-radius: 6px;
+            color: #e2e8f0;
+            background: #1e293b;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .mission-button.primary {
+            border-color: #059669;
+            color: #d1fae5;
+            background: #065f46;
+        }
+        .mission-button:hover {
+            filter: brightness(1.16);
+        }
+        .mission-feedback {
+            max-width: 72rem;
+            margin: 0 auto;
+            padding: 0 1rem;
+            overflow: hidden;
+            max-height: 0;
+            color: #fde68a;
+            font-size: 12px;
+            font-weight: 700;
+            transition: max-height .2s ease, padding .2s ease;
+        }
+        .mission-feedback.show {
+            max-height: 70px;
+            padding-top: 7px;
+            padding-bottom: 9px;
+        }
+        .main-shell {
+            margin-top: 24px;
+        }
+        .main-layout {
+            gap: 24px;
+        }
+        .current-step-card {
+            border: 1px solid #475569;
+            border-radius: 8px;
+            background: #0f172a;
+            padding: 14px;
+        }
+        .current-step-kicker {
+            color: #94a3b8;
+            font-size: 12px;
+            font-weight: 700;
+        }
+        .current-step-title {
+            margin-top: 4px;
+            color: #f8fafc;
+            font-size: 16px;
+            font-weight: 800;
+        }
+        .current-step-description {
+            margin-top: 5px;
+            color: #cbd5e1;
+            font-size: 13px;
+        }
+        .task-progress-track {
+            height: 7px;
+            margin-top: 12px;
+            overflow: hidden;
+            border-radius: 999px;
+            background: #334155;
+        }
+        .task-progress-fill {
+            height: 100%;
+            width: 0;
+            border-radius: inherit;
+            background: #10b981;
+            transition: width .25s ease;
+        }
+        .task-details {
+            margin-top: 12px;
+            color: #cbd5e1;
+            font-size: 12px;
+        }
+        .task-details summary {
+            cursor: pointer;
+            color: #a7f3d0;
+            font-weight: 800;
+        }
+        .diagnosis-options {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px;
+            margin-top: 12px;
+        }
+        .diagnosis-option {
+            min-height: 44px;
+            padding: 8px;
+            border: 1px solid #475569;
+            border-radius: 7px;
+            color: #e2e8f0;
+            background: #334155;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .diagnosis-option:hover {
+            border-color: #38bdf8;
+        }
+        .diagnosis-option.selected {
+            border-color: #fbbf24;
+            background: rgba(146, 64, 14, .42);
+        }
+        .diagnosis-option.correct {
+            border-color: #34d399;
+            color: #d1fae5;
+            background: rgba(6, 95, 70, .55);
+        }
+        .diagnosis-option.incorrect {
+            border-color: #fb7185;
+            color: #ffe4e6;
+            background: rgba(136, 19, 55, .45);
+        }
+        .diagnosis-feedback {
+            min-height: 44px;
+            margin-top: 10px;
+            padding: 10px;
+            border: 1px solid #334155;
+            border-radius: 7px;
+            color: #cbd5e1;
+            background: rgba(2, 6, 23, .7);
+            font-size: 12px;
+            text-align: center;
+        }
+        .diagnosis-actions {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .diagnosis-actions button {
+            min-height: 40px;
+            border-radius: 7px;
+            color: #fff;
+            background: #475569;
+            font-size: 12px;
+            font-weight: 800;
+            cursor: pointer;
+        }
+        .diagnosis-actions button.primary {
+            background: #047857;
+        }
+        .diagnosis-target {
+            border-color: #34d399 !important;
+            box-shadow: 0 0 0 2px rgba(52, 211, 153, .42), 0 10px 24px rgba(0, 0, 0, .24) !important;
+        }
+        .knowledge-details {
+            margin-top: 14px;
+            border-top: 1px solid #334155;
+            padding-top: 12px;
+        }
+        .knowledge-details summary {
+            color: #fda4af;
+            font-size: 13px;
+            font-weight: 800;
+            cursor: pointer;
+        }
+        .svg-control {
+            cursor: grab;
+            touch-action: none;
+            outline: none;
+        }
+        .svg-control:active {
+            cursor: grabbing;
+        }
+        .svg-control:focus-visible {
+            filter: drop-shadow(0 0 5px #fbbf24);
+        }
+        .report-dialog {
+            width: min(92vw, 620px);
+            max-height: 82vh;
+            padding: 0;
+            border: 1px solid #475569;
+            border-radius: 8px;
+            color: #e2e8f0;
+            background: #0f172a;
+            box-shadow: 0 24px 60px rgba(0,0,0,.5);
+        }
+        .report-dialog::backdrop {
+            background: rgba(2,6,23,.72);
+        }
+        .report-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 16px;
+            border-bottom: 1px solid #334155;
+        }
+        .report-close {
+            width: 36px;
+            height: 36px;
+            border-radius: 6px;
+            color: #f8fafc;
+            background: #334155;
+            cursor: pointer;
+        }
+        .report-body {
+            padding: 16px;
+        }
+        .report-stats {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 8px;
+        }
+        .report-stat {
+            padding: 10px;
+            border: 1px solid #334155;
+            border-radius: 6px;
+            background: #1e293b;
+            text-align: center;
+        }
+        .report-stat span {
+            display: block;
+            color: #94a3b8;
+            font-size: 11px;
+        }
+        .report-stat strong {
+            display: block;
+            margin-top: 3px;
+            color: #a7f3d0;
+            font-size: 20px;
+        }
+        .event-list {
+            max-height: 220px;
+            margin: 12px 0 0;
+            padding-left: 22px;
+            overflow: auto;
+            color: #cbd5e1;
+            font-size: 12px;
+        }
+        .event-list li {
+            margin-bottom: 6px;
+        }
+        @media (max-width: 899px) {
+            .app-header-inner {
+                justify-content: center;
+            }
+            .ux-mode-tabs {
+                order: 3;
+                width: 100%;
+            }
+            .ux-mode-tab {
+                flex: 1;
+            }
+            .mission-strip-inner {
+                grid-template-columns: minmax(0, 1fr) auto;
+            }
+            .mission-label {
+                display: none;
+            }
+        }
+        @media (max-width: 560px) {
+            .mission-strip-inner {
+                grid-template-columns: 1fr;
+            }
+            .mission-actions {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+            }
+            .mission-button {
+                width: 100%;
+            }
+            .report-stats {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
     </style>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen font-sans pb-12">
 
-    <header class="bg-slate-800 border-b border-slate-700 py-4 px-6 mb-8 shadow-md">
-        <div class="max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+    <header class="bg-slate-800 border-b border-slate-700 py-4 px-6 shadow-md">
+        <div class="app-header-inner max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
             <div>
-                <h1 class="text-2xl font-bold text-white">複式顯微鏡操作模擬器 <span class="text-sm text-slate-400 font-mono">v1.3</span></h1>
+                <h1 class="text-2xl font-bold text-white">複式顯微鏡操作模擬器 <span class="text-sm text-slate-400 font-mono">v1.4</span></h1>
                 <div class="device-note">建議平板橫向或電腦操作</div>
             </div>
-            <button id="reset-btn" class="bg-rose-600 hover:bg-rose-500 text-white font-semibold px-4 py-2 rounded-lg shadow transition flex items-center gap-2 cursor-pointer">
-                <span>🔄</span> 重置設定
-            </button>
+            <nav class="ux-mode-tabs" aria-label="練習模式">
+                <button class="ux-mode-tab" type="button" data-mode="guided" aria-pressed="true">入門操作</button>
+                <button class="ux-mode-tab" type="button" data-mode="pond" aria-pressed="false">池水追蹤</button>
+                <button class="ux-mode-tab" type="button" data-mode="diagnose" aria-pressed="false">故障診斷</button>
+            </nav>
+            <div class="header-action-group">
+                <button id="report-btn" class="header-secondary-button" type="button">操作紀錄</button>
+                <button id="reset-btn" class="bg-rose-600 hover:bg-rose-500 text-white font-semibold px-4 py-2 rounded-lg shadow transition flex items-center gap-2 cursor-pointer" type="button">
+                    <span aria-hidden="true">↻</span> 重置
+                </button>
+            </div>
         </div>
     </header>
+    <section class="mission-strip" aria-live="polite">
+        <div class="mission-strip-inner">
+            <span class="mission-label">目前任務</span>
+            <div class="mission-copy">
+                <strong id="mission-title">完成對光</strong>
+                <span id="mission-description">觀察視野症狀，讓光線順利進入目鏡。</span>
+            </div>
+            <div class="mission-actions">
+                <button id="mission-hint-btn" class="mission-button" type="button">取得提示</button>
+                <button id="mission-check-btn" class="mission-button primary" type="button">檢查狀態</button>
+            </div>
+        </div>
+        <div id="mission-feedback" class="mission-feedback"></div>
+    </section>
     <div id="toast" class="toast-message rounded-xl border border-rose-400/60 bg-rose-950/95 px-5 py-3 text-sm font-semibold text-rose-100 shadow-2xl"></div>
 
-    <main class="max-w-6xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-12 gap-8">
+    <main class="main-shell main-layout max-w-6xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-12">
 
         <!-- ════════════════ 左欄：顯微鏡面板 ════════════════ -->
         <div class="lg:col-span-7 bg-slate-800 rounded-2xl p-6 border border-slate-700 shadow-xl flex flex-col gap-6">
@@ -526,7 +946,7 @@
                         <path d="M 140 280 C 140 240, 180 200, 140 120 C 130 100, 110 100, 110 100" fill="none" stroke="#475569" stroke-width="14" stroke-linecap="round"/>
                         <text x="165" y="190" fill="#94a3b8" font-size="12" font-weight="bold">甲</text>
                         <title>鏡臂 — 連接鏡座與鏡筒，握持時手抓此處</title>
-                        <g id="svg-mirror" transform="rotate(0, 80, 255)">
+                        <g id="svg-mirror" class="svg-control" transform="rotate(0, 80, 255)" role="slider" tabindex="0" aria-label="Y 反光鏡角度" aria-valuemin="0" aria-valuemax="90" aria-valuenow="10">
                             <line x1="60" y1="255" x2="100" y2="255" stroke="#38bdf8" stroke-width="5" stroke-linecap="round"/>
                             <text x="70" y="270" fill="#38bdf8" font-size="10">Y</text>
                         </g>
@@ -546,20 +966,24 @@
                         <text x="105" y="60" fill="#fff" font-size="9" text-anchor="middle" font-weight="bold">10X</text>
                         <text x="122" y="52" fill="#38bdf8" stroke="#0f172a" stroke-width="0.8" paint-order="stroke" font-size="12" font-weight="bold">Ａ</text>
                         <title>Ａ 目鏡 — 10X 放大，觀察影像</title>
-                        <circle id="svg-c1" cx="152" cy="240" r="16" fill="#334155" stroke="#64748b" stroke-width="2" stroke-dasharray="4 2"/>
-                        <line x1="152" y1="226" x2="152" y2="254" stroke="#475569" stroke-width="1.5" stroke-dasharray="2 2"/>
-                        <line x1="138" y1="240" x2="166" y2="240" stroke="#475569" stroke-width="1.5" stroke-dasharray="2 2"/>
-                        <text x="171" y="244" fill="#fbbf24" stroke="#0f172a" stroke-width="0.7" paint-order="stroke" font-size="11" font-weight="bold">C1</text>
-                        <title>C1 粗調節輪 — 快速升降載物台，僅低倍使用</title>
-                        <circle id="svg-c2" cx="152" cy="215" r="10" fill="#475569" stroke="#94a3b8" stroke-width="2" stroke-dasharray="3 1"/>
-                        <line x1="152" y1="207" x2="152" y2="223" stroke="#64748b" stroke-width="1" stroke-dasharray="2 2"/>
-                        <line x1="144" y1="215" x2="160" y2="215" stroke="#64748b" stroke-width="1" stroke-dasharray="2 2"/>
-                        <text x="165" y="219" fill="#38bdf8" stroke="#0f172a" stroke-width="0.7" paint-order="stroke" font-size="11" font-weight="bold">C2</text>
+                        <g id="svg-c1-control" class="svg-control" role="slider" tabindex="0" aria-label="C1 粗調節輪" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                            <circle id="svg-c1" cx="152" cy="240" r="16" fill="#334155" stroke="#64748b" stroke-width="2" stroke-dasharray="4 2"/>
+                            <line x1="152" y1="226" x2="152" y2="254" stroke="#475569" stroke-width="1.5" stroke-dasharray="2 2"/>
+                            <line x1="138" y1="240" x2="166" y2="240" stroke="#475569" stroke-width="1.5" stroke-dasharray="2 2"/>
+                            <text x="171" y="244" fill="#fbbf24" stroke="#0f172a" stroke-width="0.7" paint-order="stroke" font-size="11" font-weight="bold">C1</text>
+                        </g>
+                        <title>C1 粗調節輪 — 快速升降載物台，低倍找像時使用</title>
+                        <g id="svg-c2-control" class="svg-control" role="slider" tabindex="0" aria-label="C2 細調節輪" aria-valuemin="0" aria-valuemax="100" aria-valuenow="20">
+                            <circle id="svg-c2" cx="152" cy="215" r="10" fill="#475569" stroke="#94a3b8" stroke-width="2" stroke-dasharray="3 1"/>
+                            <line x1="152" y1="207" x2="152" y2="223" stroke="#64748b" stroke-width="1" stroke-dasharray="2 2"/>
+                            <line x1="144" y1="215" x2="160" y2="215" stroke="#64748b" stroke-width="1" stroke-dasharray="2 2"/>
+                            <text x="165" y="219" fill="#38bdf8" stroke="#0f172a" stroke-width="0.7" paint-order="stroke" font-size="11" font-weight="bold">C2</text>
+                        </g>
                         <title>C2 細調節輪 — 微調焦距，高倍時專用</title>
                         <text x="73" y="148" fill="#34d399" stroke="#0f172a" stroke-width="0.8" paint-order="stroke" font-size="12" font-weight="bold">B1</text>
                         <text x="50" y="181" fill="#34d399" stroke="#0f172a" stroke-width="0.8" paint-order="stroke" font-size="12" font-weight="bold">B2</text>
                         <title>B1/B2 物鏡轉盤 — 切換不同倍率物鏡</title>
-                        <g id="svg-nosepiece">
+                        <g id="svg-nosepiece" class="svg-control" role="button" tabindex="0" aria-label="轉動物鏡轉盤">
                             <path d="M 66 158 Q 105 143 144 158 L 140 172 Q 105 190 70 172 Z" fill="#cbd5e1" stroke="#0f172a" stroke-width="2"/>
                             <path d="M 70 156 Q 105 148 140 156" fill="none" stroke="#64748b" stroke-width="1"/>
                             <g id="svg-objective-layer">
@@ -618,7 +1042,7 @@
                         </div>
                         <input type="range" id="coarse-slider" min="0" max="100" value="0" class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-amber-500">
                         <div id="coarse-warning" class="coarse-warning mt-2 rounded-lg border border-rose-500/50 bg-rose-950/50 p-2 text-xs font-semibold text-rose-200">
-                            ⚠️ 高倍物鏡下<span class="code-token code-c1">【C1】</span>粗調節輪僅供參考，建議改用<span class="code-token code-c2">【C2】</span>細調節輪微調，避免物鏡撞到玻片。
+                            ⚠️ 中、高倍物鏡下應避免使用<span class="code-token code-c1">【C1】</span>粗調節輪，請改用<span class="code-token code-c2">【C2】</span>細調節輪微調，降低物鏡碰撞玻片的風險。
                         </div>
                     </div>
 
@@ -689,18 +1113,18 @@
                 <h2 class="text-xl font-bold text-center w-full border-b border-slate-700 pb-2 text-sky-400">👁️ <span class="code-token code-a">【A】</span>目鏡觀察視野</h2>
 
                 <div class="eyepiece-circle flex justify-center items-center" id="eyepiece-circle">
-                    <!-- v1.3 光暈圖層 -->
+                    <!-- 視野光暈圖層 -->
                     <div id="glow-overlay"></div>
 
                     <!-- P字母視野 -->
                     <div id="view-container" class="absolute transition-transform duration-75 ease-out" style="transform:translate(0px,0px);">
-                        <div id="specimen-graphic" class="text-white font-serif select-none font-bold">
+                        <div id="specimen-graphic" class="specimen-symbol text-white select-none">
                             <span id="specimen-letter" class="specimen-inverted text-7xl">P</span>
                         </div>
                     </div>
                     <!-- 池水視野 Canvas -->
                     <canvas id="pond-canvas" width="280" height="280" class="hidden"></canvas>
-                    <!-- 追蹤圈（池水模式） v1.3 動態變色 -->
+                    <!-- 追蹤圈（池水模式） -->
                     <svg id="tracking-ring" class="hidden absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 280 280">
                         <circle id="tracking-circle" cx="140" cy="140" r="36" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="1.5" stroke-dasharray="4 4" />
                         <circle cx="140" cy="140" r="2" fill="rgba(255,255,255,0.4)" />
@@ -717,18 +1141,16 @@
                 </div>
 
                 <!-- 玻片移動控制 -->
-                <div class="w-full bg-slate-750 p-4 rounded-xl border border-slate-700">
+                <div id="slide-control-panel" class="w-full bg-slate-750 p-4 rounded-xl border border-slate-700">
                     <h3 class="font-semibold mb-3 text-slate-200 flex justify-between items-center">
                         <span>🎛️ 載物台玻片移動控制</span>
                         <span class="text-xs text-slate-400 font-mono">位置: X:<span id="pos-x">0</span> Y:<span id="pos-y">0</span></span>
                     </h3>
-                    <div class="flex flex-col items-center gap-1">
-                        <button id="move-up" class="w-12 h-10 bg-slate-700 hover:bg-slate-600 active:bg-emerald-600 rounded-t-lg font-bold text-lg cursor-pointer shadow">▲</button>
-                        <div class="flex gap-12">
-                            <button id="move-left" class="w-12 h-10 bg-slate-700 hover:bg-slate-600 active:bg-emerald-600 rounded-l-lg font-bold text-lg cursor-pointer shadow">◀</button>
-                            <button id="move-right" class="w-12 h-10 bg-slate-700 hover:bg-slate-600 active:bg-emerald-600 rounded-r-lg font-bold text-lg cursor-pointer shadow">▶</button>
-                        </div>
-                        <button id="move-down" class="w-12 h-10 bg-slate-700 hover:bg-slate-600 active:bg-emerald-600 rounded-b-lg font-bold text-lg cursor-pointer shadow">▼</button>
+                    <div class="stage-arrow-cluster">
+                        <button id="move-up" class="stage-move-button w-12 bg-slate-700 hover:bg-slate-600 active:bg-emerald-600 rounded-lg font-bold text-lg cursor-pointer shadow" type="button" aria-label="玻片向上移動">▲</button>
+                        <button id="move-left" class="stage-move-button w-12 bg-slate-700 hover:bg-slate-600 active:bg-emerald-600 rounded-lg font-bold text-lg cursor-pointer shadow" type="button" aria-label="玻片向左移動">◀</button>
+                        <button id="move-down" class="stage-move-button w-12 bg-slate-700 hover:bg-slate-600 active:bg-emerald-600 rounded-lg font-bold text-lg cursor-pointer shadow" type="button" aria-label="玻片向下移動">▼</button>
+                        <button id="move-right" class="stage-move-button w-12 bg-slate-700 hover:bg-slate-600 active:bg-emerald-600 rounded-lg font-bold text-lg cursor-pointer shadow" type="button" aria-label="玻片向右移動">▶</button>
                     </div>
                     <div class="stage-slide-visual" aria-hidden="true">
                         <div class="stage-track">
@@ -765,57 +1187,111 @@
                 </div>
             </div>
 
-            <!-- 任務清單 -->
-            <div class="bg-slate-800 rounded-2xl p-6 border border-slate-700 shadow-xl flex-1">
-                <h2 class="text-xl font-bold border-b border-slate-700 pb-2 text-amber-400 mb-4">📝 講義操作任務清單</h2>
-                <ul class="flex flex-col gap-3 text-sm">
-                    <li id="task-1" class="flex items-start gap-3 bg-slate-750 p-2.5 rounded border border-slate-700 text-slate-400">
-                        <span class="task-checkbox text-lg">⬜</span>
-                        <div>
-                            <p class="font-semibold text-slate-200">1. 完成對光（解決一片黑暗）</p>
-                            <p class="text-xs">方法：將<span class="code-token code-x">【X】</span>光圈調至 4 或 5 號，並將<span class="code-token code-y">【Y】</span>反光鏡拉至 35~55 度之間。</p>
-                        </div>
-                    </li>
-                    <li id="task-2" class="flex items-start gap-3 bg-slate-750 p-2.5 rounded border border-slate-700 text-slate-400">
-                        <span class="task-checkbox text-lg">⬜</span>
-                        <div>
-                            <p class="font-semibold text-slate-200">2. 低倍率對焦（尋找標本影像）</p>
-                            <p class="text-xs">方法：先切換至 4X 低倍，再轉動<span class="code-token code-c1">【C1】</span>粗調節輪至數值 45~55 之間使其現形。</p>
-                        </div>
-                    </li>
-                    <li id="task-3" class="flex items-start gap-3 bg-slate-750 p-2.5 rounded border border-slate-700 text-slate-400">
-                        <span class="task-checkbox text-lg">⬜</span>
-                        <div>
-                            <p class="font-semibold text-slate-200">3. 將標本移至視野中央</p>
-                            <p class="text-xs">方法：利用玻片控制鈕，將 X 和 Y 軸座標微調至中心區（均在 -15 ~ +15 內）。</p>
-                        </div>
-                    </li>
-                    <li id="task-4" class="flex items-start gap-3 bg-slate-750 p-2.5 rounded border border-slate-700 text-slate-400">
-                        <span class="task-checkbox text-lg">⬜</span>
-                        <div>
-                            <p class="font-semibold text-slate-200">4. 高倍率細微觀察</p>
-                            <p class="text-xs">方法：切換至 10X 或 60X 物鏡，此時若操作粗調節輪會出現警告，請改用<span class="code-token code-c2">【C2】</span>細調節輪調至清晰。</p>
-                        </div>
-                    </li>
-                </ul>
-            </div>
-
-            <!-- 故障排除練習 -->
-            <div class="bg-slate-800 rounded-2xl p-6 border border-slate-700 shadow-xl">
-                <h2 class="text-xl font-bold border-b border-slate-700 pb-2 text-rose-300 mb-4">🧩 故障排除練習</h2>
-                <div id="challenge-question" class="min-h-12 rounded-lg bg-slate-950/70 p-3 text-center text-sm font-semibold text-amber-200">
-                    點擊「出下一題」開始練習。
+            <!-- 入門操作：一次只顯示目前步驟 -->
+            <section id="guided-panel" class="bg-slate-800 rounded-2xl p-6 border border-slate-700 shadow-xl flex-1">
+                <h2 class="text-xl font-bold border-b border-slate-700 pb-2 text-amber-400 mb-4">入門操作進度</h2>
+                <div class="current-step-card">
+                    <div id="current-step-kicker" class="current-step-kicker">步驟 1／4</div>
+                    <div id="current-step-title" class="current-step-title">完成對光</div>
+                    <div id="current-step-description" class="current-step-description">先觀察目前視野，再判斷光線應從哪些構造進入。</div>
+                    <div class="task-progress-track" aria-hidden="true">
+                        <div id="task-progress-fill" class="task-progress-fill"></div>
+                    </div>
                 </div>
-                <div id="challenge-answers" class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2"></div>
-                <div id="challenge-feedback" class="mt-3 min-h-10 rounded-lg border border-slate-700 bg-slate-900/60 p-3 text-center text-xs text-slate-300"></div>
-                <button id="new-challenge-btn" class="mt-3 w-full rounded-lg border border-rose-500/40 bg-rose-950/40 px-4 py-2 text-sm font-bold text-rose-200 hover:bg-rose-900/50 cursor-pointer">
-                    出下一題
-                </button>
-            </div>
+                <details class="task-details">
+                    <summary>查看完整操作順序</summary>
+                    <ul class="mt-3 flex flex-col gap-3 text-sm">
+                        <li id="task-1" class="flex items-start gap-3 bg-slate-750 p-2.5 rounded border border-slate-700 text-slate-400">
+                            <span class="task-checkbox text-lg">⬜</span>
+                            <div>
+                                <p class="font-semibold text-slate-200">1. 完成對光</p>
+                                <p class="text-xs">觀察黑暗或明亮的變化，調整<span class="code-token code-x">【X】</span>光圈與<span class="code-token code-y">【Y】</span>反光鏡。</p>
+                            </div>
+                        </li>
+                        <li id="task-2" class="flex items-start gap-3 bg-slate-750 p-2.5 rounded border border-slate-700 text-slate-400">
+                            <span class="task-checkbox text-lg">⬜</span>
+                            <div>
+                                <p class="font-semibold text-slate-200">2. 低倍率對焦</p>
+                                <p class="text-xs">先使用視野較大的 4X 低倍物鏡，再用<span class="code-token code-c1">【C1】</span>找出影像。</p>
+                            </div>
+                        </li>
+                        <li id="task-3" class="flex items-start gap-3 bg-slate-750 p-2.5 rounded border border-slate-700 text-slate-400">
+                            <span class="task-checkbox text-lg">⬜</span>
+                            <div>
+                                <p class="font-semibold text-slate-200">3. 將標本移至中央</p>
+                                <p class="text-xs">根據目鏡中的倒像方向，操作玻片移動鈕使影像回到十字線中央。</p>
+                            </div>
+                        </li>
+                        <li id="task-4" class="flex items-start gap-3 bg-slate-750 p-2.5 rounded border border-slate-700 text-slate-400">
+                            <span class="task-checkbox text-lg">⬜</span>
+                            <div>
+                                <p class="font-semibold text-slate-200">4. 高倍率細微觀察</p>
+                                <p class="text-xs">置中後再升高倍率，避免使用<span class="code-token code-c1">【C1】</span>，改用<span class="code-token code-c2">【C2】</span>微調清晰度。</p>
+                            </div>
+                        </li>
+                    </ul>
+                </details>
+            </section>
+
+            <!-- 池水追蹤模式摘要 -->
+            <section id="pond-mode-panel" class="hidden bg-slate-800 rounded-2xl p-6 border border-slate-700 shadow-xl">
+                <h2 class="text-xl font-bold border-b border-slate-700 pb-2 text-teal-300 mb-4">池水追蹤任務</h2>
+                <div class="current-step-card">
+                    <div class="current-step-kicker">觀察順序</div>
+                    <div class="current-step-title">4X 找像 → 10X 觀察 → 60X 追蹤</div>
+                    <div class="current-step-description">先完成對光與對焦，再使用視野下方的玻片控制追蹤草履蟲。倍率越高，視野越窄，移動速度感越快。</div>
+                    <div id="pond-mode-status" class="mt-3 text-sm font-semibold text-teal-200">請先完成對光與 4X 對焦。</div>
+                </div>
+            </section>
+
+            <!-- 故障診斷：先判斷，再實際操作修正 -->
+            <section id="diagnosis-panel" class="hidden bg-slate-800 rounded-2xl p-6 border border-slate-700 shadow-xl">
+                <h2 class="text-xl font-bold border-b border-slate-700 pb-2 text-rose-300 mb-4">故障診斷</h2>
+                <div id="diagnosis-case-title" class="current-step-title">視野出現異常</div>
+                <div id="diagnosis-case-description" class="current-step-description">先觀察右側視野，判斷主要原因。</div>
+                <div id="diagnosis-options" class="diagnosis-options">
+                    <button class="diagnosis-option" type="button" data-cause="light"><span class="code-token code-x">X</span> 光圈與 <span class="code-token code-y">Y</span> 反光鏡</button>
+                    <button class="diagnosis-option" type="button" data-cause="coarse"><span class="code-token code-c1">C1</span> 粗調節輪</button>
+                    <button class="diagnosis-option" type="button" data-cause="fine"><span class="code-token code-c2">C2</span> 細調節輪</button>
+                    <button class="diagnosis-option" type="button" data-cause="slide">玻片位置</button>
+                </div>
+                <div id="diagnosis-feedback" class="diagnosis-feedback">先選擇最可能的原因，再操作顯微鏡修正。</div>
+                <div class="diagnosis-actions">
+                    <button id="diagnosis-new-btn" type="button">更換故障</button>
+                    <button id="diagnosis-check-btn" class="primary" type="button">檢查修正</button>
+                </div>
+
+                <details class="knowledge-details">
+                    <summary>概念題庫</summary>
+                    <div id="challenge-question" class="mt-3 min-h-12 rounded-lg bg-slate-950/70 p-3 text-center text-sm font-semibold text-amber-200">
+                        點擊「出下一題」開始練習。
+                    </div>
+                    <div id="challenge-answers" class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2"></div>
+                    <div id="challenge-feedback" class="mt-3 min-h-10 rounded-lg border border-slate-700 bg-slate-900/60 p-3 text-center text-xs text-slate-300"></div>
+                    <button id="new-challenge-btn" class="mt-3 w-full rounded-lg border border-rose-500/40 bg-rose-950/40 px-4 py-2 text-sm font-bold text-rose-200 hover:bg-rose-900/50 cursor-pointer" type="button">
+                        出下一題
+                    </button>
+                </details>
+            </section>
 
         </div>
     </main>
-    <footer class="footer-credit">© 2026 林顯豪規劃設計｜複式顯微鏡操作模擬器｜v1.3 課堂測試版</footer>
+    <dialog id="report-dialog" class="report-dialog">
+        <div class="report-header">
+            <h2 class="text-lg font-bold">本次操作紀錄</h2>
+            <button id="report-close-btn" class="report-close" type="button" aria-label="關閉操作紀錄">×</button>
+        </div>
+        <div class="report-body">
+            <div class="report-stats">
+                <div class="report-stat"><span>操作次數</span><strong id="report-actions">0</strong></div>
+                <div class="report-stat"><span>提示次數</span><strong id="report-hints">0</strong></div>
+                <div class="report-stat"><span>診斷完成</span><strong id="report-diagnoses">0</strong></div>
+                <div class="report-stat"><span>追蹤最佳</span><strong id="report-tracker">—</strong></div>
+            </div>
+            <ol id="event-list" class="event-list"></ol>
+        </div>
+    </dialog>
+    <footer class="footer-credit">© 2026 林顯豪規劃設計｜複式顯微鏡操作模擬器｜v1.4 UX 重整版</footer>
 
     <script>
         // ═══════════════════════════════════════════════════════
@@ -823,12 +1299,13 @@
         // ═══════════════════════════════════════════════════════
         const APP_META = {
             title: '複式顯微鏡操作模擬器',
-            version: 'v1.3',
+            version: 'v1.4',
             designer: '林顯豪',
             copyright: '© 2026'
         };
 
         const state = {
+            mode: 'guided',
             lens: '10x',
             coarse: 0,
             fine: 20,
@@ -837,7 +1314,21 @@
             slideX: 60,
             slideY: -50,
             taskProgress: [false, false, false, false],
-            specimen: 'letter-p' // 'letter-p' | 'letter-f' | 'pond'
+            specimen: 'letter-p',
+            hintLevel: 0,
+            diagnosis: {
+                caseIndex: -1,
+                selectedCause: null,
+                causeCorrect: false,
+                complete: false
+            },
+            stats: {
+                actions: 0,
+                hints: 0,
+                diagnoses: 0,
+                bestTracker: null,
+                events: []
+            }
         };
 
         const LETTER_SPECIMENS = {
@@ -850,6 +1341,88 @@
             '10x': { coarse: 50, fine: 60, toleranceC: 2, toleranceF: 10, scale: 2.2 },
             '60x': { coarse: 50, fine: 75, toleranceC: 0.5, toleranceF: 4, scale: 5 }
         };
+
+        const GUIDED_STEPS = [
+            {
+                title: '完成對光',
+                description: '觀察視野亮度，讓光線順利進入目鏡。',
+                hints: [
+                    '先判斷一片黑暗是光線不足，還是焦距不正確。',
+                    '檢查【X】光圈與【Y】反光鏡；這兩個構造共同控制入光。',
+                    '最後提示：光圈調到 4 或 5 號，反光鏡調到 35～55 度。'
+                ]
+            },
+            {
+                title: '使用低倍率找像',
+                description: '先使用視野最大的物鏡，再調整焦距找出標本。',
+                hints: [
+                    '找不到標本時，先確認是否使用最低倍率。',
+                    '轉回 4X，再緩慢調整【C1】粗調節輪。',
+                    '最後提示：【C1】接近 45～55 時最容易出現影像。'
+                ]
+            },
+            {
+                title: '將標本移至視野中央',
+                description: '根據倒像方向移動玻片，讓影像回到十字線中央。',
+                hints: [
+                    '先觀察影像偏向哪一側，再注意玻片與視野移動方向相反。',
+                    '影像偏右上時，要讓影像往左下移，因此玻片要往右上推。',
+                    '最後提示：位置讀值的 X、Y 都接近 0 時，影像位於中央。'
+                ]
+            },
+            {
+                title: '切換高倍率並細調',
+                description: '標本置中後再升高倍率，使用細調節輪恢復清晰。',
+                hints: [
+                    '倍率提高後視野變窄，先確認標本已在中央。',
+                    '高倍率時避免使用【C1】，改用【C2】細調節輪。',
+                    '最後提示：10X 的【C2】約在 60；60X 約在 75。'
+                ]
+            }
+        ];
+
+        const DIAGNOSIS_CASES = [
+            {
+                title: '視野一片黑暗',
+                description: '目鏡中幾乎完全看不到標本，先判斷光線是否進入。',
+                cause: 'light',
+                config: { specimen: 'letter-p', lens: '4x', coarse: 50, fine: 50, aperture: 1, mirror: 10, slideX: 0, slideY: 0 },
+                hints: ['先分辨這是沒有光，還是只有影像模糊。', '檢查【X】光圈與【Y】反光鏡。', '把光圈調大，並讓反光鏡接近中央角度。'],
+                resolved: () => isLightOk()
+            },
+            {
+                title: '看得到影像，但整體太暗',
+                description: '標本輪廓已出現，焦距大致正確，但細節難以辨認。',
+                cause: 'light',
+                config: { specimen: 'letter-f', lens: '4x', coarse: 50, fine: 50, aperture: 2, mirror: 45, slideX: 0, slideY: 0 },
+                hints: ['既然看得到輪廓，問題不一定是焦距。', '比較不同【X】光圈大小造成的亮度差異。', '將光圈提高到 4 或 5 號。'],
+                resolved: () => isLightOk()
+            },
+            {
+                title: '低倍下影像非常模糊',
+                description: '目前已完成對光，也使用 4X 低倍，但標本仍無法成像。',
+                cause: 'coarse',
+                config: { specimen: 'letter-p', lens: '4x', coarse: 12, fine: 50, aperture: 5, mirror: 45, slideX: 0, slideY: 0 },
+                hints: ['低倍找像時，先調整會明顯升降載物台的構造。', '使用【C1】粗調節輪找出大致焦距。', '將【C1】慢慢調到接近中間位置。'],
+                resolved: () => state.lens === '4x' && currentBlur() < 3
+            },
+            {
+                title: '高倍下影像稍微模糊',
+                description: '標本已置中並切到 60X，高倍下只需要小幅度修正。',
+                cause: 'fine',
+                config: { specimen: 'letter-f', lens: '60x', coarse: 50, fine: 25, aperture: 5, mirror: 45, slideX: 0, slideY: 0 },
+                hints: ['高倍時不應大幅升降載物台。', '避免使用【C1】，改用【C2】細調節輪。', '將【C2】緩慢調向約 75。'],
+                resolved: () => state.lens === '60x' && currentBlur() < 3
+            },
+            {
+                title: '影像清楚，但不在中央',
+                description: '焦距與亮度都正常，標本卻偏在視野邊緣。',
+                cause: 'slide',
+                config: { specimen: 'letter-p', lens: '4x', coarse: 50, fine: 50, aperture: 5, mirror: 45, slideX: 75, slideY: -60 },
+                hints: ['目前不必再調亮度或焦距，先觀察影像位置。', '使用視野下方的玻片方向鍵，注意倒像方向。', '讓位置讀值的 X、Y 都逐漸靠近 0。'],
+                resolved: () => Math.abs(state.slideX) <= 15 && Math.abs(state.slideY) <= 15
+            }
+        ];
 
         // ═══════════════════════════════════════════════════════
         // 2. DOM
@@ -878,6 +1451,7 @@
             focusStatus: document.getElementById('focus-status'),
             specimenLetter: document.getElementById('specimen-letter'),
             resetBtn: document.getElementById('reset-btn'),
+            reportBtn: document.getElementById('report-btn'),
             coarseWarning: document.getElementById('coarse-warning'),
             toast: document.getElementById('toast'),
             pondHint: document.getElementById('pond-hint'),
@@ -894,6 +1468,8 @@
             svgMirror: document.getElementById('svg-mirror'),
             svgC1: document.getElementById('svg-c1'),
             svgC2: document.getElementById('svg-c2'),
+            svgC1Control: document.getElementById('svg-c1-control'),
+            svgC2Control: document.getElementById('svg-c2-control'),
             specimenSelect: document.getElementById('specimen-select'),
             specimenHint: document.getElementById('specimen-hint'),
             hintCardPond: document.getElementById('hint-card-pond'),
@@ -911,7 +1487,35 @@
             trackerResult: document.getElementById('tracker-result'),
             glowOverlay: document.getElementById('glow-overlay'),
             eyepieceCircle: document.getElementById('eyepiece-circle'),
-            stageSlideDemo: document.getElementById('stage-slide-demo')
+            stageSlideDemo: document.getElementById('stage-slide-demo'),
+            slideControlPanel: document.getElementById('slide-control-panel'),
+            modeTabs: [...document.querySelectorAll('.ux-mode-tab')],
+            missionTitle: document.getElementById('mission-title'),
+            missionDescription: document.getElementById('mission-description'),
+            missionHintBtn: document.getElementById('mission-hint-btn'),
+            missionCheckBtn: document.getElementById('mission-check-btn'),
+            missionFeedback: document.getElementById('mission-feedback'),
+            guidedPanel: document.getElementById('guided-panel'),
+            pondModePanel: document.getElementById('pond-mode-panel'),
+            diagnosisPanel: document.getElementById('diagnosis-panel'),
+            currentStepKicker: document.getElementById('current-step-kicker'),
+            currentStepTitle: document.getElementById('current-step-title'),
+            currentStepDescription: document.getElementById('current-step-description'),
+            taskProgressFill: document.getElementById('task-progress-fill'),
+            pondModeStatus: document.getElementById('pond-mode-status'),
+            diagnosisCaseTitle: document.getElementById('diagnosis-case-title'),
+            diagnosisCaseDescription: document.getElementById('diagnosis-case-description'),
+            diagnosisOptions: [...document.querySelectorAll('.diagnosis-option')],
+            diagnosisFeedback: document.getElementById('diagnosis-feedback'),
+            diagnosisNewBtn: document.getElementById('diagnosis-new-btn'),
+            diagnosisCheckBtn: document.getElementById('diagnosis-check-btn'),
+            reportDialog: document.getElementById('report-dialog'),
+            reportCloseBtn: document.getElementById('report-close-btn'),
+            reportActions: document.getElementById('report-actions'),
+            reportHints: document.getElementById('report-hints'),
+            reportDiagnoses: document.getElementById('report-diagnoses'),
+            reportTracker: document.getElementById('report-tracker'),
+            eventList: document.getElementById('event-list')
         };
 
         // ═══════════════════════════════════════════════════════
@@ -1194,6 +1798,280 @@
             return html;
         }
 
+        function logAction(text, count = true) {
+            if (count) state.stats.actions += 1;
+            state.stats.events.unshift({
+                time: new Date().toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' }),
+                text
+            });
+            state.stats.events = state.stats.events.slice(0, 12);
+        }
+
+        function updateReport() {
+            dom.reportActions.textContent = state.stats.actions;
+            dom.reportHints.textContent = state.stats.hints;
+            dom.reportDiagnoses.textContent = state.stats.diagnoses;
+            dom.reportTracker.textContent = state.stats.bestTracker == null ? '—' : `${state.stats.bestTracker}%`;
+            dom.eventList.innerHTML = '';
+            if (!state.stats.events.length) {
+                const item = document.createElement('li');
+                item.textContent = '尚未累積操作紀錄。';
+                dom.eventList.appendChild(item);
+                return;
+            }
+            state.stats.events.forEach(event => {
+                const item = document.createElement('li');
+                item.textContent = `${event.time}　${event.text}`;
+                dom.eventList.appendChild(item);
+            });
+        }
+
+        function showMissionFeedback(message, tone = 'hint') {
+            dom.missionFeedback.innerHTML = formatCodes(message);
+            dom.missionFeedback.style.color = tone === 'success' ? '#a7f3d0' : tone === 'warning' ? '#fda4af' : '#fde68a';
+            dom.missionFeedback.classList.add('show');
+        }
+
+        function hideMissionFeedback() {
+            dom.missionFeedback.classList.remove('show');
+        }
+
+        function currentGuidedStepIndex() {
+            const index = state.taskProgress.findIndex(done => !done);
+            return index === -1 ? GUIDED_STEPS.length : index;
+        }
+
+        function updateGuidedStepPanel() {
+            const index = currentGuidedStepIndex();
+            const completed = state.taskProgress.filter(Boolean).length;
+            dom.taskProgressFill.style.width = `${completed / GUIDED_STEPS.length * 100}%`;
+            if (index >= GUIDED_STEPS.length) {
+                dom.currentStepKicker.textContent = '4／4 已完成';
+                dom.currentStepTitle.textContent = '入門操作完成';
+                dom.currentStepDescription.textContent = '你已完成對光、低倍找像、置中與高倍細調。';
+                return;
+            }
+            const step = GUIDED_STEPS[index];
+            dom.currentStepKicker.textContent = `步驟 ${index + 1}／${GUIDED_STEPS.length}`;
+            dom.currentStepTitle.textContent = step.title;
+            dom.currentStepDescription.textContent = step.description;
+        }
+
+        function missionContext() {
+            if (state.mode === 'guided') {
+                const index = currentGuidedStepIndex();
+                if (index >= GUIDED_STEPS.length) {
+                    return { title: '入門操作完成', description: '可切換到池水追蹤或故障診斷繼續練習。' };
+                }
+                return GUIDED_STEPS[index];
+            }
+            if (state.mode === 'pond') {
+                if (!isLightOk()) return { title: '先完成池水觀察的對光', description: '讓池水視野有足夠亮度，再開始找像。' };
+                if (state.lens === '4x' && currentBlur() >= 3) return { title: '使用 4X 找到池水影像', description: '先以低倍完成對焦，再逐步提高倍率。' };
+                if (trackerState.running) return { title: '保持草履蟲在中央圈內', description: '觀察移動方向，推動玻片持續追蹤。' };
+                if (state.lens === '4x') return { title: '比較不同倍率的視野', description: '先升到 10X 觀察，再到 60X 體驗更窄的視野。' };
+                return { title: '開始草履蟲追蹤挑戰', description: '使用玻片控制，使草履蟲盡量保持在中央圈內 10 秒。' };
+            }
+            const diagnosisCase = DIAGNOSIS_CASES[state.diagnosis.caseIndex];
+            const diagnosisAction = diagnosisCase?.cause === 'slide'
+                ? '原因判斷正確，請使用右側視野下方的玻片方向鍵修正位置。'
+                : '原因判斷正確，請使用左側對應控制器排除問題。';
+            return diagnosisCase
+                ? { title: diagnosisCase.title, description: state.diagnosis.causeCorrect ? diagnosisAction : '先觀察視野症狀，再判斷最可能的原因。' }
+                : { title: '故障診斷', description: '取得一個故障狀態並完成排除。' };
+        }
+
+        function updateExperienceUI() {
+            updateGuidedStepPanel();
+            const context = missionContext();
+            dom.missionTitle.textContent = context.title;
+            dom.missionDescription.textContent = context.description;
+            dom.modeTabs.forEach(button => {
+                button.setAttribute('aria-pressed', String(button.dataset.mode === state.mode));
+            });
+            dom.guidedPanel.classList.toggle('hidden', state.mode !== 'guided');
+            dom.pondModePanel.classList.toggle('hidden', state.mode !== 'pond');
+            dom.diagnosisPanel.classList.toggle('hidden', state.mode !== 'diagnose');
+            dom.specimenSelect.disabled = state.mode !== 'guided';
+
+            if (state.mode === 'pond') {
+                if (!isLightOk()) {
+                    dom.pondModeStatus.textContent = '目前光線不足，先調整光圈與反光鏡。';
+                } else if (currentBlur() >= 3) {
+                    dom.pondModeStatus.textContent = '目前影像仍模糊，先完成低倍對焦。';
+                } else if (state.lens === '60x') {
+                    dom.pondModeStatus.textContent = '已到 60X，可開始 10 秒追蹤挑戰。';
+                } else {
+                    dom.pondModeStatus.textContent = '影像已可辨認，可逐步提高倍率比較視野。';
+                }
+            }
+        }
+
+        function requestMissionHint() {
+            let hints = [];
+            if (state.mode === 'guided') {
+                const index = currentGuidedStepIndex();
+                if (index >= GUIDED_STEPS.length) {
+                    showMissionFeedback('入門任務已完成，可進入池水追蹤或故障診斷。', 'success');
+                    return;
+                }
+                hints = GUIDED_STEPS[index].hints;
+            } else if (state.mode === 'pond') {
+                hints = [
+                    '先完成對光與 4X 低倍對焦，再提高倍率。',
+                    '影像往哪一邊游，玻片就往同一方向推，視野才會追上牠。',
+                    '60X 視野最窄；使用短按方向鍵，避免一次移動太遠。'
+                ];
+            } else {
+                const diagnosisCase = DIAGNOSIS_CASES[state.diagnosis.caseIndex];
+                hints = diagnosisCase ? diagnosisCase.hints : ['先取得新的故障狀態。'];
+            }
+            const hint = hints[Math.min(state.hintLevel, hints.length - 1)];
+            state.hintLevel = Math.min(state.hintLevel + 1, hints.length - 1);
+            state.stats.hints += 1;
+            logAction('使用分層提示', false);
+            showMissionFeedback(hint);
+            updateReport();
+        }
+
+        function checkMissionStatus() {
+            if (state.mode === 'diagnose') {
+                checkDiagnosis();
+                return;
+            }
+            if (state.mode === 'guided') {
+                const index = currentGuidedStepIndex();
+                if (index >= GUIDED_STEPS.length) {
+                    showMissionFeedback('四項入門操作都已完成。', 'success');
+                } else {
+                    showMissionFeedback(`尚未完成「${GUIDED_STEPS[index].title}」。可先觀察右側視野變化，或取得提示。`, 'warning');
+                }
+                return;
+            }
+            if (!isLightOk()) {
+                showMissionFeedback('池水視野的光線仍不足，先調整【X】與【Y】。', 'warning');
+            } else if (currentBlur() >= 3) {
+                showMissionFeedback('池水影像仍未清晰，先以 4X 完成對焦。', 'warning');
+            } else if (state.lens === '4x') {
+                showMissionFeedback('低倍影像已清晰，接著可升到 10X 或 60X 比較視野。', 'success');
+            } else {
+                showMissionFeedback('觀察條件已準備完成，可以開始 10 秒追蹤挑戰。', 'success');
+            }
+        }
+
+        function syncMachineControls() {
+            dom.coarseSlider.value = state.coarse;
+            dom.fineSlider.value = state.fine;
+            dom.apertureSelect.value = state.aperture;
+            dom.mirrorSlider.value = state.mirror;
+            dom.specimenSelect.value = state.specimen;
+            dom.coarseVal.textContent = state.coarse;
+            dom.fineVal.textContent = state.fine;
+            dom.posX.textContent = state.slideX;
+            dom.posY.textContent = state.slideY;
+        }
+
+        function applyMachineConfig(config) {
+            Object.assign(state, config);
+            syncMachineControls();
+            switchSpecimen(config.specimen);
+            setObjective(config.lens, { silent: true });
+            updateUI();
+        }
+
+        function newDiagnosisCase() {
+            let next = Math.floor(Math.random() * DIAGNOSIS_CASES.length);
+            if (DIAGNOSIS_CASES.length > 1) {
+                while (next === state.diagnosis.caseIndex) next = Math.floor(Math.random() * DIAGNOSIS_CASES.length);
+            }
+            state.diagnosis.caseIndex = next;
+            state.diagnosis.selectedCause = null;
+            state.diagnosis.causeCorrect = false;
+            state.diagnosis.complete = false;
+            state.hintLevel = 0;
+            const diagnosisCase = DIAGNOSIS_CASES[next];
+            dom.diagnosisCaseTitle.textContent = diagnosisCase.title;
+            dom.diagnosisCaseDescription.textContent = diagnosisCase.description;
+            dom.diagnosisFeedback.textContent = '先選擇最可能的原因，再操作顯微鏡修正。';
+            dom.diagnosisFeedback.style.color = '#cbd5e1';
+            dom.diagnosisOptions.forEach(button => {
+                button.disabled = false;
+                button.classList.remove('selected', 'correct', 'incorrect');
+            });
+            dom.slideControlPanel.classList.remove('diagnosis-target');
+            applyMachineConfig(diagnosisCase.config);
+            logAction(`取得故障情境：${diagnosisCase.title}`);
+            updateExperienceUI();
+        }
+
+        function selectDiagnosisCause(cause) {
+            const diagnosisCase = DIAGNOSIS_CASES[state.diagnosis.caseIndex];
+            if (!diagnosisCase || state.diagnosis.complete) return;
+            state.diagnosis.selectedCause = cause;
+            state.diagnosis.causeCorrect = cause === diagnosisCase.cause;
+            dom.slideControlPanel.classList.toggle('diagnosis-target', state.diagnosis.causeCorrect && cause === 'slide');
+            dom.diagnosisOptions.forEach(button => {
+                button.classList.remove('selected', 'correct', 'incorrect');
+                if (button.dataset.cause === cause) {
+                    button.classList.add(state.diagnosis.causeCorrect ? 'correct' : 'incorrect');
+                }
+            });
+            if (state.diagnosis.causeCorrect) {
+                dom.diagnosisFeedback.textContent = diagnosisCase.cause === 'slide'
+                    ? '原因判斷正確。請使用右側視野下方的玻片方向鍵，將影像移回中央。'
+                    : '原因判斷正確。現在請操作左側對應控制器排除問題。';
+                dom.diagnosisFeedback.style.color = '#a7f3d0';
+            } else {
+                dom.diagnosisFeedback.textContent = '這項原因無法完整解釋目前症狀，請再次觀察視野。';
+                dom.diagnosisFeedback.style.color = '#fda4af';
+            }
+            logAction(state.diagnosis.causeCorrect ? '故障原因判斷正確' : '故障原因判斷需要修正');
+            updateExperienceUI();
+        }
+
+        function checkDiagnosis() {
+            const diagnosisCase = DIAGNOSIS_CASES[state.diagnosis.caseIndex];
+            if (!diagnosisCase) return;
+            if (!state.diagnosis.causeCorrect) {
+                dom.diagnosisFeedback.textContent = '請先選出正確的主要原因，再進行修正。';
+                dom.diagnosisFeedback.style.color = '#fda4af';
+                return;
+            }
+            if (diagnosisCase.resolved()) {
+                if (!state.diagnosis.complete) {
+                    state.stats.diagnoses += 1;
+                    logAction(`完成故障排除：${diagnosisCase.title}`);
+                }
+                state.diagnosis.complete = true;
+                dom.diagnosisFeedback.textContent = '故障已排除，視野恢復到適合觀察的狀態。';
+                dom.diagnosisFeedback.style.color = '#a7f3d0';
+                showMissionFeedback('故障診斷與實際修正都已完成。', 'success');
+            } else {
+                dom.diagnosisFeedback.textContent = '主要原因判斷正確，但儀器尚未完全修正。繼續觀察視野變化。';
+                dom.diagnosisFeedback.style.color = '#fde68a';
+            }
+            updateReport();
+            updateExperienceUI();
+        }
+
+        function setMode(mode) {
+            if (!['guided', 'pond', 'diagnose'].includes(mode)) return;
+            if (mode === state.mode) return;
+            state.mode = mode;
+            if (mode !== 'diagnose') dom.slideControlPanel.classList.remove('diagnosis-target');
+            state.hintLevel = 0;
+            hideMissionFeedback();
+            if (mode === 'pond' && state.specimen !== 'pond') {
+                switchSpecimen('pond');
+            }
+            if (mode === 'diagnose') {
+                newDiagnosisCase();
+            } else {
+                updateExperienceUI();
+            }
+            logAction(`切換至${mode === 'guided' ? '入門操作' : mode === 'pond' ? '池水追蹤' : '故障診斷'}模式`);
+        }
+
         // ═══════════════════════════════════════════════════════
         // 5. 渲染迴圈（池水）
         // ═══════════════════════════════════════════════════════
@@ -1300,6 +2178,8 @@
         function finishTracker() {
             trackerState.running = false;
             const successPct = Math.round(trackerState.onTime / TRACK_TOTAL * 100);
+            state.stats.bestTracker = Math.max(state.stats.bestTracker ?? 0, successPct);
+            logAction(`完成草履蟲追蹤，成功率 ${successPct}%`);
             dom.trackerPct.textContent = successPct + '%';
             dom.trackerStart.textContent = '再挑戰';
             dom.trackerStart.disabled = false;
@@ -1321,6 +2201,8 @@
                     'mt-3 rounded-lg p-3 text-sm text-center font-semibold bg-rose-950/60 border border-rose-600 text-rose-200';
                 result.textContent = `💪 加油！成功率 ${successPct}%。記得：影像往哪邊跑，玻片就往同一邊推，才能把影像拉回中央！`;
             }
+            updateReport();
+            updateExperienceUI();
         }
 
         // ─── 追蹤圈變色 ───
@@ -1348,7 +2230,11 @@
         // ═══════════════════════════════════════════════════════
         function switchSpecimen(val) {
             state.specimen = val;
+            dom.specimenSelect.value = val;
             const letterSpecimen = LETTER_SPECIMENS[val];
+            if (state.mode === 'pond' && val !== 'pond') {
+                state.mode = 'guided';
+            }
 
             if (trackerState.running) {
                 trackerState.running = false;
@@ -1392,6 +2278,7 @@
             }
             // 統一更新 UI
             updateUI();
+            updateExperienceUI();
         }
 
         // ═══════════════════════════════════════════════════════
@@ -1511,6 +2398,9 @@
             dom.svgStage.setAttribute('transform', `translate(0,${stageY})`);
             dom.svgC1.setAttribute('transform', `rotate(${state.coarse*3.6},152,240)`);
             dom.svgC2.setAttribute('transform', `rotate(${state.fine*7.2},152,215)`);
+            dom.svgC1Control.setAttribute('aria-valuenow', String(state.coarse));
+            dom.svgC2Control.setAttribute('aria-valuenow', String(state.fine));
+            dom.svgMirror.setAttribute('aria-valuenow', String(state.mirror));
 
             // ── 數值顯示 ──
             dom.coarseVal.innerText = state.coarse;
@@ -1549,6 +2439,7 @@
                     dom.pondHint.className = 'mt-2 rounded-lg bg-rose-950/40 px-3 py-2 text-center text-rose-200';
                 }
                 updateTasks(...state.taskProgress);
+                updateExperienceUI();
                 return;
             }
 
@@ -1611,11 +2502,20 @@
 
             // ── 任務清單 ──
             const isInCenter = Math.abs(state.slideX) <= 15 && Math.abs(state.slideY) <= 15;
-            state.taskProgress[0] = state.taskProgress[0] || isLight;
-            state.taskProgress[1] = state.taskProgress[1] || (state.taskProgress[0] && state.lens === '4x' && blurAmount < 3);
-            state.taskProgress[2] = state.taskProgress[2] || (state.taskProgress[1] && isInCenter);
-            state.taskProgress[3] = state.taskProgress[3] || (state.taskProgress[2] && state.lens !== '4x' && isClear);
+            if (state.mode === 'guided') {
+                const previousProgress = state.taskProgress.join('');
+                state.taskProgress[0] = state.taskProgress[0] || isLight;
+                state.taskProgress[1] = state.taskProgress[1] || (state.taskProgress[0] && state.lens === '4x' && blurAmount < 3);
+                state.taskProgress[2] = state.taskProgress[2] || (state.taskProgress[1] && isInCenter);
+                state.taskProgress[3] = state.taskProgress[3] || (state.taskProgress[2] && state.lens !== '4x' && isClear);
+                if (state.taskProgress.join('') !== previousProgress) {
+                    state.hintLevel = 0;
+                    hideMissionFeedback();
+                    logAction('完成一項入門操作步驟', false);
+                }
+            }
             updateTasks(...state.taskProgress);
+            updateExperienceUI();
         }
 
         // ═══════════════════════════════════════════════════════
@@ -1651,7 +2551,7 @@
                 ], correct: 1, explain: '低倍找像時可用粗調節輪；清楚後再置中、換高倍。' },
             { question: '已切到 60X 高倍，影像稍微不清楚，應該使用哪個調節輪？', answers: ['【C1】粗調節輪', '【Y】反光鏡', '【C2】細調節輪',
                     '【丙】鏡座'
-                ], correct: 2, explain: '高倍物鏡下不能使用粗調節輪，避免物鏡壓到玻片。' },
+                ], correct: 2, explain: '高倍物鏡下應避免使用粗調節輪，改用細調節輪可降低物鏡碰撞玻片的風險。' },
             { question: '玻片上的實體字母是 P，複式顯微鏡視野中會看到什麼？', answers: ['完全一樣還是 P', '只會上下顛倒但不會左右相反', '只會變大，不會改變方向',
                     '上下左右顛倒後像 d'
                 ], correct: 3, explain: '複式顯微鏡成像會上下左右倒立，所以 P 在視野中看起來像 d。' },
@@ -1662,7 +2562,7 @@
                 ], correct: 0, explain: '有影像但太暗，表示已經找到標本，應優先增加入光量：調大光圈並微調反光鏡。' },
             { question: '高倍鏡觀察時影像模糊，應該怎麼處理？', answers: ['使用【C2】細調節輪微調', '使用【C1】粗調節輪快速升降', '把光圈完全關小',
                     '把標本移出視野'
-                ], correct: 0, explain: '高倍鏡下只能用細調節輪慢慢微調清晰度，不可使用粗調節輪。' },
+                ], correct: 0, explain: '高倍鏡下應使用細調節輪慢慢微調清晰度，避免用粗調節輪大幅升降載物台。' },
             { question: '在 10X 物鏡下，草履蟲從視野左邊游出去了，玻片要往哪移才能追上牠？', answers: ['往左移', '往右移', '往上移', '不用移，等牠回來'],
                 correct: 0, explain: '影像往左漂出，代表草履蟲相對視野往左，玻片也要往左推，讓視野「追」上牠。' },
             { question: '換到 60X 高倍後，視野中草履蟲移動速度感覺比 4X 時快很多，原因是？', answers: ['草履蟲真的游得更快了', '視野範圍變小，同樣移動距離佔視野比例更大',
@@ -1716,9 +2616,14 @@
         // ═══════════════════════════════════════════════════════
         // 12. 事件監聽
         // ═══════════════════════════════════════════════════════
-        dom.lens4x.addEventListener('click', () => setObjective('4x'));
-        dom.lens10x.addEventListener('click', () => setObjective('10x'));
-        dom.lens60x.addEventListener('click', () => setObjective('60x'));
+        function chooseObjective(mag) {
+            setObjective(mag);
+            logAction(`切換至 ${mag.toUpperCase()} 物鏡`);
+        }
+
+        dom.lens4x.addEventListener('click', () => chooseObjective('4x'));
+        dom.lens10x.addEventListener('click', () => chooseObjective('10x'));
+        dom.lens60x.addEventListener('click', () => chooseObjective('60x'));
         dom.newChallengeBtn.addEventListener('click', newChallenge);
 
         dom.coarseSlider.addEventListener('input', e => {
@@ -1730,30 +2635,35 @@
             }
             updateUI();
         });
+        dom.coarseSlider.addEventListener('change', () => logAction('調整 C1 粗調節輪'));
 
         dom.fineSlider.addEventListener('input', e => {
             state.fine = parseInt(e.target.value);
             dom.fineVal.innerText = state.fine;
             updateUI();
         });
+        dom.fineSlider.addEventListener('change', () => logAction('調整 C2 細調節輪'));
 
         dom.apertureSelect.addEventListener('change', e => {
             state.aperture = parseInt(e.target.value);
             updateUI();
+            logAction(`將光圈調至 ${state.aperture} 號`);
         });
 
         dom.mirrorSlider.addEventListener('input', e => {
             state.mirror = parseInt(e.target.value);
             updateUI();
         });
+        dom.mirrorSlider.addEventListener('change', () => logAction('調整 Y 反光鏡'));
 
-        function moveSlide(dx, dy) {
+        function moveSlide(dx, dy, shouldLog = true) {
             const step = 15;
             state.slideX = Math.max(-120, Math.min(120, state.slideX + dx * step));
             state.slideY = Math.max(-120, Math.min(120, state.slideY + dy * step));
             dom.posX.innerText = state.slideX;
             dom.posY.innerText = state.slideY;
             updateUI();
+            if (shouldLog) logAction('移動載物台玻片');
         }
 
         dom.btnUp.addEventListener('click', () => moveSlide(0, -1));
@@ -1762,17 +2672,97 @@
         dom.btnRight.addEventListener('click', () => moveSlide(1, 0));
 
         document.addEventListener('keydown', e => {
-            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) e.preventDefault();
+            if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) return;
+            if (e.target.closest('input, select, button, summary, [role="slider"], [role="button"]')) return;
+            e.preventDefault();
             if (e.key === 'ArrowUp') moveSlide(0, -1);
             if (e.key === 'ArrowDown') moveSlide(0, 1);
             if (e.key === 'ArrowLeft') moveSlide(-1, 0);
             if (e.key === 'ArrowRight') moveSlide(1, 0);
         });
 
-        dom.specimenSelect.addEventListener('change', e => switchSpecimen(e.target.value));
-        dom.trackerStart.addEventListener('click', startTracker);
+        dom.specimenSelect.addEventListener('change', e => {
+            switchSpecimen(e.target.value);
+            logAction(`切換標本為${e.target.options[e.target.selectedIndex].text}`);
+        });
+        dom.trackerStart.addEventListener('click', () => {
+            startTracker();
+            if (trackerState.running) {
+                logAction('開始草履蟲追蹤挑戰');
+                updateExperienceUI();
+            }
+        });
+
+        dom.modeTabs.forEach(button => {
+            button.addEventListener('click', () => setMode(button.dataset.mode));
+        });
+        dom.missionHintBtn.addEventListener('click', requestMissionHint);
+        dom.missionCheckBtn.addEventListener('click', checkMissionStatus);
+        dom.diagnosisOptions.forEach(button => {
+            button.addEventListener('click', () => selectDiagnosisCause(button.dataset.cause));
+        });
+        dom.diagnosisNewBtn.addEventListener('click', newDiagnosisCase);
+        dom.diagnosisCheckBtn.addEventListener('click', checkDiagnosis);
+
+        dom.reportBtn.addEventListener('click', () => {
+            updateReport();
+            dom.reportDialog.showModal();
+        });
+        dom.reportCloseBtn.addEventListener('click', () => dom.reportDialog.close());
+
+        function bindSvgSlider(control, stateKey, min, max, pixelsPerUnit, label) {
+            let drag = null;
+            const applyValue = value => {
+                state[stateKey] = Math.max(min, Math.min(max, Math.round(value)));
+                if (stateKey === 'coarse') dom.coarseSlider.value = state[stateKey];
+                if (stateKey === 'fine') dom.fineSlider.value = state[stateKey];
+                if (stateKey === 'mirror') dom.mirrorSlider.value = state[stateKey];
+                if (stateKey === 'coarse' && state.lens !== '4x') showCoarseWarning();
+                updateUI();
+            };
+            control.addEventListener('pointerdown', event => {
+                event.preventDefault();
+                drag = { startY: event.clientY, startValue: state[stateKey], pointerId: event.pointerId };
+                control.setPointerCapture?.(event.pointerId);
+            });
+            control.addEventListener('pointermove', event => {
+                if (!drag || drag.pointerId !== event.pointerId) return;
+                applyValue(drag.startValue + (drag.startY - event.clientY) / pixelsPerUnit);
+            });
+            const finish = event => {
+                if (!drag || drag.pointerId !== event.pointerId) return;
+                control.releasePointerCapture?.(event.pointerId);
+                drag = null;
+                logAction(`直接拖曳機體上的${label}`);
+            };
+            control.addEventListener('pointerup', finish);
+            control.addEventListener('pointercancel', finish);
+            control.addEventListener('keydown', event => {
+                if (!['ArrowUp', 'ArrowRight', 'ArrowDown', 'ArrowLeft'].includes(event.key)) return;
+                event.preventDefault();
+                const delta = ['ArrowUp', 'ArrowRight'].includes(event.key) ? 2 : -2;
+                applyValue(state[stateKey] + delta);
+            });
+        }
+
+        bindSvgSlider(dom.svgC1Control, 'coarse', 0, 100, 1.1, ' C1 粗調節輪');
+        bindSvgSlider(dom.svgC2Control, 'fine', 0, 100, 0.8, ' C2 細調節輪');
+        bindSvgSlider(dom.svgMirror, 'mirror', 0, 90, 1, ' Y 反光鏡');
+
+        function cycleObjective() {
+            const order = ['4x', '10x', '60x'];
+            const next = order[(order.indexOf(state.lens) + 1) % order.length];
+            chooseObjective(next);
+        }
+        dom.svgNosepiece.addEventListener('click', cycleObjective);
+        dom.svgNosepiece.addEventListener('keydown', event => {
+            if (!['Enter', ' '].includes(event.key)) return;
+            event.preventDefault();
+            cycleObjective();
+        });
 
         dom.resetBtn.addEventListener('click', () => {
+            state.mode = 'guided';
             state.lens = '10x';
             state.coarse = 0;
             state.fine = 20;
@@ -1782,16 +2772,23 @@
             state.slideY = -50;
             state.taskProgress = [false, false, false, false];
             state.specimen = 'letter-p';
-            dom.coarseSlider.value = state.coarse;
-            dom.fineSlider.value = state.fine;
-            dom.apertureSelect.value = state.aperture;
-            dom.mirrorSlider.value = state.mirror;
-            dom.coarseVal.innerText = state.coarse;
-            dom.fineVal.innerText = state.fine;
-            dom.posX.innerText = state.slideX;
-            dom.posY.innerText = state.slideY;
-            dom.specimenSelect.value = 'letter-p';
+            state.hintLevel = 0;
+            state.diagnosis = {
+                caseIndex: -1,
+                selectedCause: null,
+                causeCorrect: false,
+                complete: false
+            };
+            state.stats = {
+                actions: 0,
+                hints: 0,
+                diagnoses: 0,
+                bestTracker: null,
+                events: []
+            };
+            syncMachineControls();
             hideCoarseWarning();
+            hideMissionFeedback();
             stopPondLoop();
             switchSpecimen('letter-p');
             setObjective('10x', { silent: true });
@@ -1807,23 +2804,26 @@
             dom.trackerStatus.className = 'text-slate-300 font-bold text-sm';
             dom.trackerResult.classList.add('hidden');
             dom.glowOverlay.classList.remove('active');
+            newChallenge();
             updateUI();
-            showToast('🔄 已重置所有設定');
+            updateReport();
+            updateExperienceUI();
+            if (dom.reportDialog.open) dom.reportDialog.close();
+            showToast('已重置所有設定與練習紀錄');
         });
 
         // ═══════════════════════════════════════════════════════
         // 13. 初始化
         // ═══════════════════════════════════════════════════════
-        dom.coarseVal.innerText = state.coarse;
-        dom.fineVal.innerText = state.fine;
-        dom.posX.innerText = state.slideX;
-        dom.posY.innerText = state.slideY;
+        syncMachineControls();
         setObjective('10x', { silent: true });
         newChallenge();
         updateUI();
+        updateReport();
+        updateExperienceUI();
 
         // 若有池水模式，啟動迴圈（但初始為 letter，所以不啟動）
-        console.log('🔬 複式顯微鏡模擬器 v1.3 已啟動');
+        console.log('複式顯微鏡模擬器 v1.4 已啟動');
     </script>
 </body>
 </html>
