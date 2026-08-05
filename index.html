@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>複式顯微鏡操作模擬器 v1.4</title>
+    <title>複式顯微鏡操作模擬器 v1.5</title>
     <style>
         *, *::before, *::after { box-sizing: border-box; }
         html { line-height: 1.5; -webkit-text-size-adjust: 100%; }
@@ -226,13 +226,13 @@
             [class~="md:grid-cols-2"] { grid-template-columns: repeat(2, minmax(0, 1fr)); }
         }
         @media (min-width: 900px) and (min-height: 650px) {
-            [class~="lg:grid-cols-12"] { grid-template-columns: repeat(12, minmax(0, 1fr)); }
-            [class~="lg:col-span-7"] { grid-column: span 7 / span 7; }
-            [class~="lg:col-span-5"] { grid-column: span 5 / span 5; }
-            .main-shell.main-layout { gap: 12px; }
+            .main-shell.main-layout {
+                grid-template-columns: minmax(0, 1.08fr) minmax(0, .92fr);
+                gap: 12px;
+            }
         }
         .eyepiece-circle {
-            width: min(280px, 100%);
+            width: min(320px, 100%);
             height: auto;
             aspect-ratio: 1;
             border: 8px solid #1e293b;
@@ -896,7 +896,7 @@
     <header class="bg-slate-800 border-b border-slate-700 py-4 px-6 shadow-md">
         <div class="app-header-inner max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
             <div>
-                <h1 class="text-2xl font-bold text-white">複式顯微鏡操作模擬器 <span class="text-sm text-slate-400 font-mono">v1.4</span></h1>
+                <h1 class="text-2xl font-bold text-white">複式顯微鏡操作模擬器 <span class="text-sm text-slate-400 font-mono">v1.5</span></h1>
                 <div class="device-note">建議平板橫向或電腦操作</div>
             </div>
             <nav class="ux-mode-tabs" aria-label="練習模式">
@@ -928,10 +928,10 @@
     </section>
     <div id="toast" class="toast-message rounded-xl border border-rose-400/60 bg-rose-950/95 px-5 py-3 text-sm font-semibold text-rose-100 shadow-2xl"></div>
 
-    <main class="main-shell main-layout max-w-6xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-12">
+    <main class="main-shell main-layout max-w-6xl mx-auto px-4 grid grid-cols-1">
 
         <!-- ════════════════ 左欄：顯微鏡面板 ════════════════ -->
-        <div class="lg:col-span-7 bg-slate-800 rounded-2xl p-6 border border-slate-700 shadow-xl flex flex-col gap-6">
+        <div class="bg-slate-800 rounded-2xl p-6 border border-slate-700 shadow-xl flex flex-col gap-6">
             <h2 class="text-xl font-bold border-b border-slate-700 pb-2 text-emerald-400">🔬 顯微鏡構造與動態面板</h2>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
@@ -1018,9 +1018,9 @@
                     <div class="bg-slate-750 p-3 rounded-lg border border-cyan-700/50">
                         <label class="block font-semibold mb-2 text-cyan-300">🔲 切換玻片標本</label>
                         <select id="specimen-select">
-                            <option value="letter-p">字母 P（認識上下左右顛倒）</option>
-                            <option value="letter-f">字母 F（比較倒像方向）</option>
-                            <option value="pond">池水（矽藻＋草履蟲）</option>
+                            <option value="letter-p">字母 P（認識方向）</option>
+                            <option value="letter-f">字母 F（認識方向）</option>
+                            <option value="pond">池水(微生物)</option>
                         </select>
                         <p id="specimen-hint" class="mt-2 text-xs text-slate-400">目前：P 字玻片。目鏡視野會看到上下左右顛倒的「d」。</p>
                     </div>
@@ -1028,9 +1028,9 @@
                     <div class="bg-slate-750 p-3 rounded-lg border border-slate-700">
                         <label class="block font-semibold mb-2 text-emerald-400"><span class="code-token code-b">【B1/B2】</span>切換物鏡倍率</label>
                         <div class="grid grid-cols-3 gap-2">
-                            <button id="lens-4x" class="py-2 px-1 rounded font-bold bg-emerald-600 text-white shadow ring-2 ring-emerald-400 cursor-pointer text-xs">4X (低倍)</button>
-                            <button id="lens-10x" class="py-2 px-1 rounded font-bold bg-slate-700 hover:bg-slate-600 text-slate-300 cursor-pointer text-xs">10X (中倍)</button>
-                            <button id="lens-60x" class="py-2 px-1 rounded font-bold bg-slate-700 hover:bg-slate-600 text-slate-300 cursor-pointer text-xs">60X (高倍)</button>
+                            <button id="lens-4x" class="py-2 px-1 rounded font-bold bg-emerald-600 text-white shadow ring-2 ring-emerald-400 cursor-pointer text-xs">4X</button>
+                            <button id="lens-10x" class="py-2 px-1 rounded font-bold bg-slate-700 hover:bg-slate-600 text-slate-300 cursor-pointer text-xs">10X</button>
+                            <button id="lens-60x" class="py-2 px-1 rounded font-bold bg-slate-700 hover:bg-slate-600 text-slate-300 cursor-pointer text-xs">60X</button>
                         </div>
                         <div id="start-lens-hint" class="lens-start-hint">請先轉回 4X 低倍開始找像。</div>
                     </div>
@@ -1042,7 +1042,7 @@
                         </div>
                         <input type="range" id="coarse-slider" min="0" max="100" value="0" class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-amber-500">
                         <div id="coarse-warning" class="coarse-warning mt-2 rounded-lg border border-rose-500/50 bg-rose-950/50 p-2 text-xs font-semibold text-rose-200">
-                            ⚠️ 中、高倍物鏡下應避免使用<span class="code-token code-c1">【C1】</span>粗調節輪，請改用<span class="code-token code-c2">【C2】</span>細調節輪微調，降低物鏡碰撞玻片的風險。
+                            ⚠️ 高倍物鏡下應避免使用粗調節輪，請用細調節輪，以免物鏡碰撞玻片。
                         </div>
                     </div>
 
@@ -1106,7 +1106,7 @@
         </div>
 
         <!-- ════════════════ 右欄：視野 + 任務 ════════════════ -->
-        <div class="lg:col-span-5 flex flex-col gap-6">
+        <div class="flex flex-col gap-6">
 
             <!-- 目鏡視野 -->
             <div class="bg-slate-800 rounded-2xl p-6 border border-slate-700 shadow-xl flex flex-col items-center gap-4">
@@ -1291,7 +1291,7 @@
             <ol id="event-list" class="event-list"></ol>
         </div>
     </dialog>
-    <footer class="footer-credit">© 2026 林顯豪規劃設計｜複式顯微鏡操作模擬器｜v1.4 UX 重整版</footer>
+    <footer class="footer-credit">© 2026 林顯豪規劃設計｜複式顯微鏡操作模擬器｜v1.5 UX 重整版</footer>
 
     <script>
         // ═══════════════════════════════════════════════════════
@@ -1299,7 +1299,7 @@
         // ═══════════════════════════════════════════════════════
         const APP_META = {
             title: '複式顯微鏡操作模擬器',
-            version: 'v1.4',
+            version: 'v1.5',
             designer: '林顯豪',
             copyright: '© 2026'
         };
@@ -1533,8 +1533,8 @@
             }));
         })();
 
-        const NUM_PARA = 6;
-        const PARA_SIZE_VARIANTS = [18, 19.2, 20.4, 21.6, 22.8, 24];
+        const NUM_PARA = 9;
+        const PARA_SIZE_VARIANTS = [18, 18.8, 19.6, 20.4, 21.2, 22, 22.8, 23.6, 24.4];
         const paramecia = Array.from({ length: NUM_PARA }, (_, i) => ({
             x: (Math.random() - 0.5) * 120,
             y: (Math.random() - 0.5) * 120,
@@ -1670,7 +1670,8 @@
                     p.angle += (Math.random() - 0.5) * Math.PI * 0.8;
                     p.turnCooldown = 1800 + Math.random() * 2200;
                 }
-                const bound = 220;
+                // 保持草履蟲位於載物台可追蹤的範圍內，避免看得到卻無法移入中央。
+                const bound = 115;
                 if (p.x > bound) { p.x = bound;
                     p.angle = Math.PI - p.angle; }
                 if (p.x < -bound) { p.x = -bound;
@@ -2657,7 +2658,8 @@
         dom.mirrorSlider.addEventListener('change', () => logAction('調整 Y 反光鏡'));
 
         function moveSlide(dx, dy, shouldLog = true) {
-            const step = 15;
+            // 倍率越高，玻片操作必須越細，避免一次按鍵就越過中央追蹤圈。
+            const step = state.lens === '60x' ? 5 : state.lens === '10x' ? 10 : 15;
             state.slideX = Math.max(-120, Math.min(120, state.slideX + dx * step));
             state.slideY = Math.max(-120, Math.min(120, state.slideY + dy * step));
             dom.posX.innerText = state.slideX;
@@ -2823,7 +2825,7 @@
         updateExperienceUI();
 
         // 若有池水模式，啟動迴圈（但初始為 letter，所以不啟動）
-        console.log('複式顯微鏡模擬器 v1.4 已啟動');
+        console.log('複式顯微鏡模擬器 v1.5 已啟動');
     </script>
 </body>
 </html>
