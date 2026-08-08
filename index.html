@@ -12,7 +12,7 @@
 </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>複式顯微鏡操作模擬器 v1.5</title>
+    <title>複式顯微鏡操作模擬器 v1.6 Responsive Candidate</title>
     <style>
         *, *::before, *::after { box-sizing: border-box; }
         html { line-height: 1.5; -webkit-text-size-adjust: 100%; }
@@ -234,7 +234,8 @@
         @media (min-width: 768px) {
             [class~="md:grid-cols-2"] { grid-template-columns: repeat(2, minmax(0, 1fr)); }
         }
-        @media (min-width: 900px) and (min-height: 650px) {
+        @media (min-width: 1024px) and (min-height: 650px),
+               (min-width: 900px) and (min-height: 650px) and (orientation: landscape) {
             .main-shell.main-layout {
                 grid-template-columns: minmax(0, 1.08fr) minmax(0, .92fr);
                 gap: 12px;
@@ -495,12 +496,30 @@
             background: rgba(16, 185, 129, 0.9);
             box-shadow: 0 0 10px rgba(16,185,129,.55);
         }
-        .stage-slide-caption {
-            margin-top: 8px;
-            text-align: center;
+        .machine-visual-stack {
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .machine-magnification,
+        .view-focus-status {
+            width: 100%;
+            padding: 7px 10px;
+            border: 1px solid rgba(71, 85, 105, .72);
+            border-radius: 7px;
             color: #cbd5e1;
+            background: rgba(15, 23, 42, .72);
             font-size: 12px;
             line-height: 1.35;
+        }
+        .inverted-hint-symbol {
+            display: inline-block;
+            transform: rotate(180deg);
+            font-family: Arial, Helvetica, sans-serif;
+            font-weight: 700;
+            line-height: 1;
+            vertical-align: -0.12em;
         }
         .code-token {
             font-weight: 800;
@@ -883,6 +902,88 @@
                 display: none;
             }
         }
+        /* 平板直式：先同步比較機體與視野，再呈現完整操作區。 */
+        @media (min-width: 720px) and (max-width: 1023px) and (orientation: portrait) {
+            .main-shell.main-layout {
+                grid-template-columns: minmax(280px, .9fr) minmax(320px, 1.1fr);
+                grid-template-rows: repeat(8, auto);
+                align-items: start;
+                gap: 12px;
+                padding-right: 12px;
+                padding-left: 12px;
+            }
+            .microscope-panel,
+            .machine-control-grid,
+            .observation-column,
+            .view-panel {
+                display: contents;
+            }
+            .instrument-title,
+            .view-title {
+                align-self: stretch;
+                margin: 0;
+                padding: 12px 14px;
+                border: 1px solid #334155;
+                border-radius: 8px;
+                background: #1e293b;
+                font-size: 17px;
+                line-height: 1.4;
+            }
+            .instrument-title {
+                grid-area: 1 / 1 / 2 / 2;
+            }
+            .view-title {
+                grid-area: 1 / 2 / 2 / 3;
+            }
+            .machine-visual-stack {
+                grid-area: 2 / 1 / 3 / 2;
+            }
+            .machine-visual {
+                height: 300px;
+                padding: 12px;
+            }
+            .eyepiece-circle {
+                grid-area: 2 / 2 / 3 / 3;
+                width: min(288px, 100%);
+                align-self: center;
+                justify-self: center;
+            }
+            .view-focus-status {
+                grid-area: 3 / 2 / 4 / 3;
+                align-self: start;
+            }
+            .instrument-controls {
+                grid-area: 4 / 1 / 5 / 3;
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 14px;
+                padding: 16px;
+                border: 1px solid #334155;
+                border-radius: 8px;
+                background: #1e293b;
+            }
+            .instrument-controls > * {
+                min-width: 0;
+            }
+            .instrument-controls > :last-child {
+                grid-column: 1 / -1;
+            }
+            #slide-control-panel {
+                grid-area: 5 / 1 / 6 / 3;
+                margin: 0;
+            }
+            #tracker-panel {
+                grid-area: 6 / 1 / 7 / 3;
+            }
+            #hint-card-pond {
+                grid-area: 7 / 1 / 8 / 3;
+            }
+            #guided-panel,
+            #pond-mode-panel,
+            #diagnosis-panel {
+                grid-area: 8 / 1 / 9 / 3;
+            }
+        }
         @media (max-width: 560px) {
             .mission-strip-inner {
                 grid-template-columns: 1fr;
@@ -905,8 +1006,8 @@
     <header class="bg-slate-800 border-b border-slate-700 py-4 px-6 shadow-md">
         <div class="app-header-inner max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
             <div>
-                <h1 class="text-2xl font-bold text-white">複式顯微鏡操作模擬器 <span class="text-sm text-slate-400 font-mono">v1.5</span></h1>
-                <div class="device-note">建議平板橫向或電腦操作</div>
+                <h1 class="text-2xl font-bold text-white">複式顯微鏡操作模擬器 <span class="text-sm text-slate-400 font-mono">v1.6 RC</span></h1>
+                <div class="device-note">建議平板或電腦操作</div>
             </div>
             <nav class="ux-mode-tabs" aria-label="練習模式">
                 <button class="ux-mode-tab" type="button" data-mode="guided" aria-pressed="true">入門操作</button>
@@ -940,14 +1041,15 @@
     <main class="main-shell main-layout max-w-6xl mx-auto px-4 grid grid-cols-1">
 
         <!-- ════════════════ 左欄：顯微鏡面板 ════════════════ -->
-        <div class="bg-slate-800 rounded-2xl p-6 border border-slate-700 shadow-xl flex flex-col gap-6">
-            <h2 class="text-xl font-bold border-b border-slate-700 pb-2 text-emerald-400">🔬 顯微鏡構造與動態面板</h2>
+        <div class="microscope-panel bg-slate-800 rounded-2xl p-6 border border-slate-700 shadow-xl flex flex-col gap-6">
+            <h2 class="instrument-title text-xl font-bold border-b border-slate-700 pb-2 text-emerald-400">🔬 顯微鏡構造與動態面板</h2>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+            <div class="machine-control-grid grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
                 <!-- SVG 機體 -->
-                <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 flex justify-center items-center h-[340px] relative">
-                    <span class="absolute top-2 left-2 text-xs text-slate-500">即時機體動態狀態</span>
-                    <svg width="220" height="320" viewBox="0 0 200 300" class="w-full h-full">
+                <div class="machine-visual-stack">
+                    <div class="machine-visual bg-slate-950 p-4 rounded-xl border border-slate-800 flex justify-center items-center h-[340px] relative">
+                        <span class="absolute top-2 left-2 text-xs text-slate-500">即時機體動態狀態</span>
+                        <svg width="220" height="320" viewBox="0 0 200 300" class="w-full h-full">
                         <title>顯微鏡構造示意圖</title>
                         <path d="M 40 280 L 160 280 C 170 280, 170 295, 160 295 L 40 295 C 30 295, 30 280, 40 280 Z" fill="#475569" stroke="#64748b" stroke-width="2"/>
                         <text x="100" y="291" fill="#94a3b8" font-size="10" text-anchor="middle">【丙】鏡座</text>
@@ -1017,11 +1119,13 @@
                             </g>
                         </g>
                         <title>物鏡 — 4X/10X/60X 三種倍率可切換</title>
-                    </svg>
+                        </svg>
+                    </div>
+                    <div class="machine-magnification">🔍 總放大倍率：<span id="total-mag" class="text-emerald-400 font-bold font-mono">40X</span></div>
                 </div>
 
                 <!-- 右側控制 -->
-                <div class="flex flex-col gap-4 text-sm">
+                <div class="instrument-controls flex flex-col gap-4 text-sm">
 
                     <!-- ★ 玻片標本切換選單 -->
                     <div class="bg-slate-750 p-3 rounded-lg border border-cyan-700/50">
@@ -1031,7 +1135,7 @@
                             <option value="letter-f">字母 F（認識方向）</option>
                             <option value="pond">池水(微生物)</option>
                         </select>
-                        <p id="specimen-hint" class="mt-2 text-xs text-slate-400">目前：P 字玻片。目鏡視野會看到上下左右顛倒的「d」。</p>
+                        <p id="specimen-hint" class="mt-2 text-xs text-slate-400">P 字玻片。目鏡視野會看到「d」。</p>
                     </div>
 
                     <div class="bg-slate-750 p-3 rounded-lg border border-slate-700">
@@ -1115,11 +1219,11 @@
         </div>
 
         <!-- ════════════════ 右欄：視野 + 任務 ════════════════ -->
-        <div class="flex flex-col gap-6">
+        <div class="observation-column flex flex-col gap-6">
 
             <!-- 目鏡視野 -->
-            <div class="bg-slate-800 rounded-2xl p-6 border border-slate-700 shadow-xl flex flex-col items-center gap-4">
-                <h2 class="text-xl font-bold text-center w-full border-b border-slate-700 pb-2 text-sky-400">👁️ <span class="code-token code-a">【A】</span>目鏡觀察視野</h2>
+            <div class="view-panel bg-slate-800 rounded-2xl p-6 border border-slate-700 shadow-xl flex flex-col items-center gap-4">
+                <h2 class="view-title text-xl font-bold text-center w-full border-b border-slate-700 pb-2 text-sky-400">👁️ <span class="code-token code-a">【A】</span>目鏡觀察視野</h2>
 
                 <div class="eyepiece-circle flex justify-center items-center" id="eyepiece-circle">
                     <!-- 視野光暈圖層 -->
@@ -1149,6 +1253,8 @@
                     </div>
                 </div>
 
+                <div class="view-focus-status">🎯 當前成像狀態：<span id="focus-status" class="text-amber-400 font-semibold">一片黑暗</span></div>
+
                 <!-- 玻片移動控制 -->
                 <div id="slide-control-panel" class="w-full bg-slate-750 p-4 rounded-xl border border-slate-700">
                     <h3 class="font-semibold mb-3 text-slate-200 flex justify-between items-center">
@@ -1168,14 +1274,8 @@
                                 <div class="specimen-mark"></div>
                             </div>
                         </div>
-                        <div class="stage-slide-caption">實體玻片會往按鍵方向移動；目鏡中的影像會往相反方向移動。</div>
                     </div>
-                    <p class="text-xs text-slate-400 text-center mt-3">💡 提示：手動方向與目鏡視野看到的移動方向<strong>完全相反</strong>！</p>
-                </div>
-
-                <div class="w-full bg-slate-900/60 p-3 rounded-lg border border-slate-700/50 text-xs text-slate-300 flex flex-col gap-1">
-                    <div>🔍 目前總放大倍率：<span id="total-mag" class="text-emerald-400 font-bold font-mono">40X</span></div>
-                    <div>🎯 當前成像狀態：<span id="focus-status" class="text-amber-400 font-semibold">一片黑暗</span></div>
+                    <p class="text-xs text-slate-400 text-center mt-3">💡 提示：玻片移動方向與目鏡看到的移動方向<strong>相反</strong></p>
                 </div>
 
                 <div id="hint-card-pond" class="hidden w-full rounded-xl border border-teal-700/60 bg-teal-950/35 p-3 text-xs text-teal-100">
@@ -1300,7 +1400,7 @@
             <ol id="event-list" class="event-list"></ol>
         </div>
     </dialog>
-    <footer class="footer-credit">© 2026 林顯豪規劃設計｜複式顯微鏡操作模擬器｜v1.5 UX 重整版</footer>
+    <footer class="footer-credit">© 2026 林顯豪規劃設計｜複式顯微鏡操作模擬器｜v1.6 Responsive Candidate</footer>
 
     <script>
         // ═══════════════════════════════════════════════════════
@@ -1308,7 +1408,7 @@
         // ═══════════════════════════════════════════════════════
         const APP_META = {
             title: '複式顯微鏡操作模擬器',
-            version: 'v1.5',
+            version: 'v1.6-rc',
             designer: '林顯豪',
             copyright: '© 2026'
         };
@@ -1329,7 +1429,8 @@
                 caseIndex: -1,
                 selectedCause: null,
                 causeCorrect: false,
-                complete: false
+                complete: false,
+                hintsUsed: 0
             },
             stats: {
                 actions: 0,
@@ -1341,8 +1442,8 @@
         };
 
         const LETTER_SPECIMENS = {
-            'letter-p': { label: 'P', viewHint: '目前：P 字玻片。目鏡視野會看到上下左右顛倒的「d」。' },
-            'letter-f': { label: 'F', viewHint: '目前：F 字玻片。目鏡視野會看到上下左右顛倒後的 F。' }
+            'letter-p': { label: 'P', viewHintHtml: 'P 字玻片。目鏡視野會看到「d」。' },
+            'letter-f': { label: 'F', viewHintHtml: 'F 字玻片。目鏡視野會看到「<span class="inverted-hint-symbol">F</span>」。' }
         };
 
         const focusTargets = {
@@ -1713,7 +1814,8 @@
             startTime: 0,
             elapsed: 0,
             onTime: 0,
-            lastTick: 0
+            lastTick: 0,
+            attempts: 0
         };
 
         // ═══════════════════════════════════════════════════════
@@ -1806,6 +1908,31 @@
                 html = html.split(key).join(value);
             });
             return html;
+        }
+
+        // ── GA4 事件傳送（安全封裝：gtag 不存在時靜默略過）──
+        function ga4Track(eventName, params = {}) {
+            try {
+                if (typeof gtag === 'function') {
+                    gtag('event', eventName, params);
+                }
+            } catch (e) { /* 靜默忽略，不影響模擬器運作 */ }
+        }
+
+        function currentLayoutSnapshot() {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            const isPortrait = width < height;
+            const isWide = (width >= 1024 && height >= 650)
+                || (width >= 900 && height >= 650 && !isPortrait);
+            const isTabletPortrait = width >= 720 && width <= 1023 && isPortrait;
+            return {
+                layoutMode: isWide ? 'wide_split' : isTabletPortrait ? 'tablet_compare' : 'stacked',
+                orientation: isPortrait ? 'portrait' : 'landscape',
+                viewportBucket: width < 720 ? 'under_720' : width < 900 ? '720_899' : width < 1024 ? '900_1023' : '1024_plus',
+                width,
+                height
+            };
         }
 
         function logAction(text, count = true) {
@@ -1936,11 +2063,19 @@
                 const diagnosisCase = DIAGNOSIS_CASES[state.diagnosis.caseIndex];
                 hints = diagnosisCase ? diagnosisCase.hints : ['先取得新的故障狀態。'];
             }
-            const hint = hints[Math.min(state.hintLevel, hints.length - 1)];
-            state.hintLevel = Math.min(state.hintLevel + 1, hints.length - 1);
+            const hintIndex = Math.min(state.hintLevel, hints.length - 1);
+            const hint = hints[hintIndex];
+            const hintNumber = hintIndex + 1;
+            state.hintLevel = Math.min(hintIndex + 1, hints.length - 1);
             state.stats.hints += 1;
+            if (state.mode === 'diagnose') state.diagnosis.hintsUsed += 1;
             logAction('使用分層提示', false);
             showMissionFeedback(hint);
+            ga4Track('hint_used', {
+                mode: state.mode,
+                hint_level: hintNumber,
+                step_index: state.mode === 'guided' ? currentGuidedStepIndex() : undefined
+            });
             updateReport();
         }
 
@@ -1998,6 +2133,7 @@
             state.diagnosis.selectedCause = null;
             state.diagnosis.causeCorrect = false;
             state.diagnosis.complete = false;
+            state.diagnosis.hintsUsed = 0;
             state.hintLevel = 0;
             const diagnosisCase = DIAGNOSIS_CASES[next];
             dom.diagnosisCaseTitle.textContent = diagnosisCase.title;
@@ -2011,6 +2147,11 @@
             dom.slideControlPanel.classList.remove('diagnosis-target');
             applyMachineConfig(diagnosisCase.config);
             logAction(`取得故障情境：${diagnosisCase.title}`);
+            ga4Track('diagnosis_case_start', {
+                case_title: diagnosisCase.title,
+                cause: diagnosisCase.cause,
+                layout_mode: currentLayoutSnapshot().layoutMode
+            });
             updateExperienceUI();
         }
 
@@ -2051,6 +2192,11 @@
                 if (!state.diagnosis.complete) {
                     state.stats.diagnoses += 1;
                     logAction(`完成故障排除：${diagnosisCase.title}`);
+                    ga4Track('diagnosis_complete', {
+                        case_title: diagnosisCase.title,
+                        cause: diagnosisCase.cause,
+                        hints_used: state.diagnosis.hintsUsed
+                    });
                 }
                 state.diagnosis.complete = true;
                 dom.diagnosisFeedback.textContent = '故障已排除，視野恢復到適合觀察的狀態。';
@@ -2080,6 +2226,7 @@
                 updateExperienceUI();
             }
             logAction(`切換至${mode === 'guided' ? '入門操作' : mode === 'pond' ? '池水追蹤' : '故障診斷'}模式`);
+            ga4Track('mode_select', { mode });
         }
 
         // ═══════════════════════════════════════════════════════
@@ -2154,6 +2301,12 @@
             trackerState.elapsed = 0;
             trackerState.onTime = 0;
             trackerState.lastTick = performance.now();
+            trackerState.attempts += 1;
+            ga4Track('tracking_start', {
+                attempt_number: trackerState.attempts,
+                lens: state.lens,
+                layout_mode: currentLayoutSnapshot().layoutMode
+            });
             dom.trackerResult.classList.add('hidden');
             dom.trackerBar.style.width = '0%';
             dom.trackerBar.style.transition = 'none';
@@ -2190,6 +2343,12 @@
             const successPct = Math.round(trackerState.onTime / TRACK_TOTAL * 100);
             state.stats.bestTracker = Math.max(state.stats.bestTracker ?? 0, successPct);
             logAction(`完成草履蟲追蹤，成功率 ${successPct}%`);
+            ga4Track('tracking_complete', {
+                attempt_number: trackerState.attempts,
+                success_rate: successPct,
+                lens: state.lens,
+                outcome: successPct >= 70 ? 'excellent' : successPct >= 40 ? 'good' : 'needs_practice'
+            });
             dom.trackerPct.textContent = successPct + '%';
             dom.trackerStart.textContent = '再挑戰';
             dom.trackerStart.disabled = false;
@@ -2260,7 +2419,7 @@
                 dom.trackerPanel.classList.add('hidden');
                 dom.hintCardPond.classList.add('hidden');
                 dom.specimenLetter.textContent = letterSpecimen.label;
-                dom.specimenHint.textContent = letterSpecimen.viewHint;
+                dom.specimenHint.innerHTML = letterSpecimen.viewHintHtml;
                 dom.pondCanvas.classList.add('slide-swap');
                 dom.viewContainer.classList.add('slide-swap');
                 setTimeout(() => {
@@ -2272,7 +2431,7 @@
                 dom.trackingRing.classList.remove('hidden');
                 dom.trackerPanel.classList.remove('hidden');
                 dom.hintCardPond.classList.remove('hidden');
-                dom.specimenHint.textContent = '目前：池水玻片。4X先對焦，再升倍追蹤草履蟲！';
+                dom.specimenHint.textContent = '池水玻片。4X先對焦，再升倍追蹤草履蟲！';
 
                 // 強制切換至 4X 並 Toast 提示
                 if (state.lens !== '4x') {
@@ -2513,15 +2672,34 @@
             // ── 任務清單 ──
             const isInCenter = Math.abs(state.slideX) <= 15 && Math.abs(state.slideY) <= 15;
             if (state.mode === 'guided') {
-                const previousProgress = state.taskProgress.join('');
+                const previousProgress = [...state.taskProgress];
                 state.taskProgress[0] = state.taskProgress[0] || isLight;
                 state.taskProgress[1] = state.taskProgress[1] || (state.taskProgress[0] && state.lens === '4x' && blurAmount < 3);
                 state.taskProgress[2] = state.taskProgress[2] || (state.taskProgress[1] && isInCenter);
                 state.taskProgress[3] = state.taskProgress[3] || (state.taskProgress[2] && state.lens !== '4x' && isClear);
-                if (state.taskProgress.join('') !== previousProgress) {
+                if (state.taskProgress.some((done, i) => done !== previousProgress[i])) {
                     state.hintLevel = 0;
                     hideMissionFeedback();
                     logAction('完成一項入門操作步驟', false);
+                    // 找出剛完成的步驟（比對前後差異）
+                    const stepNames = ['對光', '低倍對焦', '移至中央', '高倍細調'];
+                    state.taskProgress.forEach((done, i) => {
+                        if (done && !previousProgress[i]) {
+                            ga4Track('guided_step_complete', {
+                                step_number: i + 1,
+                                step_name: stepNames[i],
+                                lens: state.lens,
+                                aperture: state.aperture
+                            });
+                        }
+                    });
+                    // 四步全完成
+                    if (state.taskProgress.every(Boolean)) {
+                        ga4Track('guided_all_steps_complete', {
+                            total_actions: state.stats.actions,
+                            hints_used: state.stats.hints
+                        });
+                    }
                 }
             }
             updateTasks(...state.taskProgress);
@@ -2629,6 +2807,10 @@
         function chooseObjective(mag) {
             setObjective(mag);
             logAction(`切換至 ${mag.toUpperCase()} 物鏡`);
+            ga4Track('objective_select', {
+                lens: mag,
+                mode: state.mode
+            });
         }
 
         dom.lens4x.addEventListener('click', () => chooseObjective('4x'));
@@ -2695,6 +2877,10 @@
         dom.specimenSelect.addEventListener('change', e => {
             switchSpecimen(e.target.value);
             logAction(`切換標本為${e.target.options[e.target.selectedIndex].text}`);
+            ga4Track('specimen_select', {
+                specimen: e.target.value,
+                mode: state.mode
+            });
         });
         dom.trackerStart.addEventListener('click', () => {
             startTracker();
@@ -2773,6 +2959,12 @@
         });
 
         dom.resetBtn.addEventListener('click', () => {
+            // GA4：在清空統計前記錄已完成步驟數
+            ga4Track('reset_used', {
+                steps_completed: state.taskProgress.filter(Boolean).length,
+                total_actions: state.stats.actions,
+                hints_used: state.stats.hints
+            });
             state.mode = 'guided';
             state.lens = '10x';
             state.coarse = 0;
@@ -2788,7 +2980,8 @@
                 caseIndex: -1,
                 selectedCause: null,
                 causeCorrect: false,
-                complete: false
+                complete: false,
+                hintsUsed: 0
             };
             state.stats = {
                 actions: 0,
@@ -2805,6 +2998,7 @@
             setObjective('10x', { silent: true });
             // 重置追蹤狀態
             trackerState.running = false;
+            trackerState.attempts = 0;
             dom.trackerStart.disabled = false;
             dom.trackerStart.textContent = '開始挑戰';
             dom.trackerBar.style.width = '0%';
@@ -2834,7 +3028,37 @@
         updateExperienceUI();
 
         // 若有池水模式，啟動迴圈（但初始為 letter，所以不啟動）
-        console.log('複式顯微鏡模擬器 v1.5 已啟動');
+        console.log('複式顯微鏡模擬器 v1.6 Responsive Candidate 已啟動');
+
+        // ── 初始化：送出 simulator_start 事件 ──
+        let lastLayoutSnapshot = currentLayoutSnapshot();
+        ga4Track('simulator_start', {
+            version: APP_META.version,
+            screen_width: window.screen.width,
+            screen_height: window.screen.height,
+            viewport_width: lastLayoutSnapshot.width,
+            viewport_height: lastLayoutSnapshot.height,
+            layout_mode: lastLayoutSnapshot.layoutMode,
+            orientation: lastLayoutSnapshot.orientation,
+            viewport_bucket: lastLayoutSnapshot.viewportBucket
+        });
+
+        let layoutChangeTimer = null;
+        window.addEventListener('resize', () => {
+            window.clearTimeout(layoutChangeTimer);
+            layoutChangeTimer = window.setTimeout(() => {
+                const nextLayout = currentLayoutSnapshot();
+                if (nextLayout.layoutMode === lastLayoutSnapshot.layoutMode
+                    && nextLayout.orientation === lastLayoutSnapshot.orientation) return;
+                ga4Track('layout_changed', {
+                    from_layout: lastLayoutSnapshot.layoutMode,
+                    to_layout: nextLayout.layoutMode,
+                    orientation: nextLayout.orientation,
+                    viewport_bucket: nextLayout.viewportBucket
+                });
+                lastLayoutSnapshot = nextLayout;
+            }, 250);
+        });
     </script>
 </body>
 </html>
