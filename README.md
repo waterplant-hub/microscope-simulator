@@ -23,7 +23,7 @@ https://waterplant-hub.github.io/microscope-simulator/
 
 ## 版本
 
-v1.6 candidate：課堂測試版
+v1.7：學習流程版
 
 ## 授權與署名
 
