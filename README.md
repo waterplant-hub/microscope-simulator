@@ -2,14 +2,14 @@
 
 給國中生物課使用的互動式顯微鏡操作練習工具，讓學生在實際使用顯微鏡前，先建立正確的操作順序、成像方向與安全觀念。
 
-目前版本：**v1.7 學習流程版**
+目前版本：**v1.8.1 行動學習版**
 
 ## 線上使用
 
 - 線上網站：[https://waterplant-hub.github.io/microscope-simulator/](https://waterplant-hub.github.io/microscope-simulator/)
 - GitHub 儲存庫：[https://github.com/waterplant-hub/microscope-simulator](https://github.com/waterplant-hub/microscope-simulator)
 
-建議使用平板或電腦操作；iPhone／iPad 建議 Safari，Android、Chromebook 與電腦建議 Chrome。
+支援電腦雙欄、平板與 iPhone 直式操作；iPhone／iPad 建議 Safari，Android、Chromebook 與電腦建議 Chrome。
 
 ## 學習目標
 
@@ -21,7 +21,7 @@
 
 ## 練習模式
 
-- **入門操作**：依任務流程完成對光、找像、置中與升倍。
+- **學生任務**：依任務流程完成對光、4X 找像、置中與 60X 細調。
 - **池水追蹤**：練習在顯微鏡視野中追蹤移動中的微生物。
 - **故障診斷**：從視野症狀判斷操作問題。
 - **操作紀錄**：整理操作次數、提示使用與學習狀態。
@@ -49,4 +49,4 @@
 
 ## 版權
 
-© 2026 林顯豪規劃設計｜複式顯微鏡操作模擬器｜v1.7 學習流程版
+© 2026 林顯豪規劃設計｜複式顯微鏡操作模擬器｜v1.8.1 行動學習版

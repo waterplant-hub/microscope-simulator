@@ -12,7 +12,7 @@
 </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>複式顯微鏡操作模擬器 v1.7</title>
+    <title>複式顯微鏡操作模擬器 v1.8.1</title>
     <style>
         *, *::before, *::after { box-sizing: border-box; }
         html { line-height: 1.5; -webkit-text-size-adjust: 100%; }
@@ -1090,6 +1090,49 @@
                 grid-template-columns: repeat(2, minmax(0, 1fr));
             }
         }
+        .phone-observer, .phone-tools { display: none; }
+        @media (max-width: 719px) {
+            body { padding-bottom: env(safe-area-inset-bottom, 12px); }
+            body > header { padding: 10px 12px; }
+            .app-header-inner { gap: 8px; }
+            .app-header-inner h1 { font-size: 18px; line-height: 1.4; }
+            .device-note { display: none; }
+            .header-action-group { margin-left: auto; }
+            .ux-mode-tab, button, select { min-height: 44px; }
+            select { font-size: 16px; }
+            .mission-strip { position: static; }
+            .mission-strip-inner { padding: 8px 12px; gap: 6px; }
+            .mission-copy span { font-size: 12px; }
+            .mission-actions { display: flex; }
+            .main-shell.main-layout { display: flex; flex-direction: column; padding: 0 10px; gap: 10px; }
+            .microscope-panel, .machine-control-grid, .observation-column, .view-panel { display: contents; }
+            .instrument-title, .view-title { display: none; }
+            .phone-observer {
+                display: grid; grid-template-columns: 82px minmax(0, 1fr);
+                gap: 4px; align-items: center; position: sticky; top: 0;
+                z-index: 20; padding: 6px 0; background: #0f172a;
+                border-bottom: 1px solid #64748b;
+            }
+            .phone-observer .machine-visual { height: 165px; padding: 0; border: 0; }
+            .phone-observer .machine-visual > span { display: none; }
+            .phone-observer .machine-visual-stack { min-width: 0; font-size: 11px; }
+            .phone-observer .eyepiece-circle { width: min(100%, 34svh, 290px); justify-self: center; border-width: 4px; }
+            .phone-observer .view-focus-status { grid-column: 1 / -1; margin: 0; padding: 3px; font-size: 12px; min-height: 26px; }
+            .phone-tools { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
+            .phone-tools button { background: #334155; color: white; border: 1px solid #64748b; border-radius: 6px; font-size: 14px; }
+            .phone-tools button[aria-pressed="true"] { background: #166534; border-color: #4ade80; }
+            .instrument-controls { gap: 10px; padding: 8px 4px; }
+            .instrument-controls > div { padding: 6px; }
+            input[type="range"] { min-height: 44px; touch-action: pan-y; }
+            input[type="range"]::-webkit-slider-thumb { min-width: 26px; min-height: 26px; }
+            [data-phone-group]:not(.phone-selected) { display: none !important; }
+            #slide-control-panel { padding: 10px; }
+            #slide-control-panel h3 { flex-wrap: wrap; gap: 4px; font-size: 14px; }
+            .stage-arrow-cluster { grid-template-rows: 44px 44px; }
+            .stage-move-button { min-height: 44px; touch-action: manipulation; }
+            #hint-card-pond { display: none; }
+            .onboarding-dialog { max-width: calc(100% - 24px); }
+        }
     </style>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen font-sans pb-12">
@@ -1097,11 +1140,11 @@
     <header class="bg-slate-800 border-b border-slate-700 py-4 px-6 shadow-md">
         <div class="app-header-inner max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
             <div>
-                <h1 class="text-2xl font-bold text-white">複式顯微鏡操作模擬器 <span class="text-sm text-slate-400 font-mono">v1.7</span></h1>
+                <h1 class="text-2xl font-bold text-white">複式顯微鏡操作模擬器 <span class="text-sm text-slate-400 font-mono">v1.8.1</span></h1>
                 <div class="device-note">建議平板或電腦操作</div>
             </div>
             <nav class="ux-mode-tabs" aria-label="練習模式">
-                <button class="ux-mode-tab" type="button" data-mode="guided" aria-pressed="true">入門操作</button>
+                <button class="ux-mode-tab" type="button" data-mode="guided" aria-pressed="true">學生任務</button>
                 <button class="ux-mode-tab" type="button" data-mode="pond" aria-pressed="false">池水追蹤</button>
                 <button class="ux-mode-tab" type="button" data-mode="diagnose" aria-pressed="false">故障診斷</button>
             </nav>
@@ -1234,7 +1277,7 @@
                             <option value="letter-f">字母 F（認識方向）</option>
                             <option value="pond">池水(微生物)</option>
                         </select>
-                        <p id="specimen-hint" class="mt-2 text-xs text-slate-400">P 字玻片。目鏡視野會看到「d」。</p>
+                        <p id="specimen-hint" class="mt-2 text-xs text-slate-400">P 字玻片。目鏡視野會看到「<span class="inverted-hint-symbol">P</span>」。</p>
                     </div>
 
                     <div class="bg-slate-750 p-3 rounded-lg border border-slate-700">
@@ -1395,9 +1438,9 @@
                 </div>
             </div>
 
-            <!-- 入門操作：一次只顯示目前步驟 -->
+            <!-- 學生任務：一次只顯示目前步驟 -->
             <section id="guided-panel" class="bg-slate-800 rounded-2xl p-4 border border-slate-700 shadow-xl flex-1">
-                <div class="guided-progress-compact" aria-label="入門操作進度">
+                <div class="guided-progress-compact" aria-label="學生任務進度">
                     <div id="current-step-kicker" class="current-step-kicker">步驟 1／4</div>
                     <div class="task-progress-track" aria-hidden="true">
                         <div id="task-progress-fill" class="task-progress-fill"></div>
@@ -1498,7 +1541,7 @@
             <ol id="event-list" class="event-list"></ol>
         </div>
     </dialog>
-    <footer class="footer-credit">© 2026 林顯豪規劃設計｜複式顯微鏡操作模擬器｜v1.7 學習流程版</footer>
+    <footer class="footer-credit">© 2026 林顯豪規劃設計｜複式顯微鏡操作模擬器｜v1.8.1 行動學習版</footer>
 
     <script>
         // ═══════════════════════════════════════════════════════
@@ -1506,7 +1549,7 @@
         // ═══════════════════════════════════════════════════════
         const APP_META = {
             title: '複式顯微鏡操作模擬器',
-            version: 'v1.7',
+            version: 'v1.8.1',
             designer: '林顯豪',
             copyright: '© 2026'
         };
@@ -1544,14 +1587,14 @@
         };
 
         const LETTER_SPECIMENS = {
-            'letter-p': { label: 'P', viewHintHtml: 'P 字玻片。目鏡視野會看到「d」。' },
+            'letter-p': { label: 'P', viewHintHtml: 'P 字玻片。目鏡視野會看到「<span class="inverted-hint-symbol">P</span>」。' },
             'letter-f': { label: 'F', viewHintHtml: 'F 字玻片。目鏡視野會看到「<span class="inverted-hint-symbol">F</span>」。' }
         };
 
         const focusTargets = {
             '4x': { coarse: 50, fine: 50, toleranceC: 8, toleranceF: 30, scale: 1 },
-            '10x': { coarse: 50, fine: 60, toleranceC: 2, toleranceF: 10, scale: 2.2 },
-            '60x': { coarse: 50, fine: 75, toleranceC: 0.5, toleranceF: 4, scale: 5 }
+            '10x': { coarse: 50, fine: 60, toleranceC: 2, toleranceF: 10, scale: 2.5 },
+            '60x': { coarse: 50, fine: 75, toleranceC: 0.5, toleranceF: 4, scale: 15 }
         };
 
         const GUIDED_STEPS = [
@@ -1583,8 +1626,8 @@
                 ]
             },
             {
-                title: '切換高倍率並細調',
-                description: '標本置中後再升高倍率，使用細調節輪恢復清晰。',
+                title: '切換 60X 並細調',
+                description: '標本置中後轉到 60X，使用細調節輪恢復清晰。',
                 hints: [
                     '倍率提高後視野變窄，先確認標本已在中央。',
                     '高倍率時避免使用【C1】，改用【C2】細調節輪。',
@@ -1759,9 +1802,10 @@
             speed: 0.6 + Math.random() * 0.3
         }));
 
-        const PARA_SPEED = { '4x': 0.042, '10x': 0.084, '60x': 0.144 };
-        const POND_SCALE = { '4x': 1, '10x': 2.2, '60x': 5 };
-        const BIO_SCALE = { '4x': 0.45, '10x': 1, '60x': 6 };
+        // Specimen speed is physical; magnification alone increases apparent speed.
+        const PARA_SPEED = { '4x': 0.042, '10x': 0.042, '60x': 0.042 };
+        const POND_SCALE = { '4x': 1, '10x': 2.5, '60x': 15 };
+        const BIO_SCALE = { '4x': 0.4, '10x': 1, '60x': 6 };
 
         let pondAnimFrame = null;
         let pondCtx = null;
@@ -1879,7 +1923,7 @@
                 p.x += Math.cos(p.angle) * speed;
                 p.y += Math.sin(p.angle) * speed;
                 if (p.turnCooldown > 0) p.turnCooldown -= dt;
-                const turnChance = dt * (mag === '60x' ? 0.00055 : mag === '10x' ? 0.00035 : 0.0002);
+                const turnChance = dt * 0.0002;
                 if (p.turnCooldown <= 0 && Math.random() < turnChance) {
                     p.angle += (Math.random() - 0.5) * Math.PI * 0.8;
                     p.turnCooldown = 1800 + Math.random() * 2200;
@@ -1899,8 +1943,8 @@
 
         function parameciumCanvasPos(p, mag, slideX, slideY) {
             const sc = POND_SCALE[mag];
-            const cx = 140 - slideX * sc + p.x * sc;
-            const cy = 140 - slideY * sc + p.y * sc;
+            const cx = 140 - (slideX + p.x) * sc;
+            const cy = 140 - (slideY + p.y) * sc;
             return { cx, cy };
         }
 
@@ -1937,14 +1981,15 @@
             const target = focusTargets[state.lens];
             const cd = Math.abs(state.coarse - target.coarse);
             const fd = Math.abs(state.fine - target.fine);
-            if (cd <= target.toleranceC) {
-                if (fd <= target.toleranceF) {
-                    const b = (cd * 2) + (fd * 0.4);
-                    return b < 1.5 ? 0 : b;
-                }
-                return 8 + (fd - target.toleranceF) * 0.3;
-            }
-            return 15 + (cd - target.toleranceC) * 0.4;
+            // Blur is measured in the 280-unit optical field, not glyph pixels.
+            // Low power has greater depth of field; fine adjustment stays subtle.
+            const sensitivity = {
+                '4x': { coarse: 0.24, fine: 0.025 },
+                '10x': { coarse: 0.55, fine: 0.05 },
+                '60x': { coarse: 1.2, fine: 0.10 }
+            }[state.lens];
+            const defocus = Math.hypot(cd * sensitivity.coarse, fd * sensitivity.fine);
+            return Math.min(24, Math.pow(Math.max(0, defocus - 0.18), 1.35));
         }
 
         function getLightLevel() {
@@ -2146,7 +2191,7 @@
             const elapsed = elapsedSimulationSeconds();
             state.simulationCompletionTracked = true;
             clearHintAttention();
-            dom.guidedResultSummary.textContent = `入門操作完成｜用時 ${formatElapsedTime(elapsed)}｜提示 ${state.guidedHintsUsed} 次。接著可進行池水追蹤或故障診斷。`;
+            dom.guidedResultSummary.textContent = `學生任務完成｜用時 ${formatElapsedTime(elapsed)}｜提示 ${state.guidedHintsUsed} 次。接著可進行池水追蹤或故障診斷。`;
             dom.guidedResultSummary.classList.remove('hidden');
             ga4Track('simulation_complete', {
                 simulator: 'compound_microscope',
@@ -2182,7 +2227,7 @@
             if (state.mode === 'guided') {
                 const index = currentGuidedStepIndex();
                 if (index >= GUIDED_STEPS.length) {
-                    return { title: '入門操作完成', description: '可切換到池水追蹤或故障診斷繼續練習。' };
+                    return { title: '學生任務完成', description: '可切換到池水追蹤或故障診斷繼續練習。' };
                 }
                 return GUIDED_STEPS[index];
             }
@@ -2274,7 +2319,7 @@
             if (state.mode === 'guided') {
                 const index = currentGuidedStepIndex();
                 if (index >= GUIDED_STEPS.length) {
-                    showMissionFeedback('四項入門操作都已完成。', 'success');
+                    showMissionFeedback('四項學生任務都已完成。', 'success');
                 } else {
                     showMissionFeedback(`尚未完成「${GUIDED_STEPS[index].title}」。可先觀察右側視野變化，或取得提示。`, 'warning');
                 }
@@ -2413,7 +2458,7 @@
             } else {
                 updateExperienceUI();
             }
-            logAction(`切換至${mode === 'guided' ? '入門操作' : mode === 'pond' ? '池水追蹤' : '故障診斷'}模式`);
+            logAction(`切換至${mode === 'guided' ? '學生任務' : mode === 'pond' ? '池水追蹤' : '故障診斷'}模式`);
             ga4Track('mode_select', { mode });
             if (mode === 'guided') scheduleHintAttention();
         }
@@ -2446,6 +2491,7 @@
 
             pondCtx.save();
             pondCtx.translate(ox, oy);
+            pondCtx.rotate(Math.PI);
 
             pondCtx.filter = blurPx > 0 ? `blur(${blurPx}px)` : 'none';
             for (const d of DIATOMS) drawDiatom(pondCtx, d, mag);
@@ -2657,7 +2703,7 @@
                 const rad = sa * Math.PI / 180;
                 const x = 105 + Math.sin(rad) * 30,
                     y = 166 + Math.cos(rad) * 10;
-                node.setAttribute('transform', `translate(${x.toFixed(1)} ${y.toFixed(1)}) rotate(${(-sa * 0.22).toFixed(1)})`);
+                node.setAttribute('transform', `translate(${x.toFixed(1)} ${y.toFixed(1)}) rotate(${(-Math.sin(rad) * 18).toFixed(1)})`);
                 return { node, depth: Math.cos(rad) };
             });
             rendered.sort((a, b) => a.depth - b.depth).forEach(({ node }) => dom.svgObjectiveLayer.appendChild(node));
@@ -2685,6 +2731,7 @@
         }
 
         function setObjective(mag, opts = {}) {
+            if (!Object.prototype.hasOwnProperty.call(focusTargets, mag)) return;
             const silent = opts.silent === true;
             state.lens = mag;
 
@@ -2730,6 +2777,9 @@
                 dom.totalMag.innerText = '600X'; }
 
             rotateNosepieceTo(objectiveAngles[mag]);
+            for (const slot of objectiveSlots) {
+                document.getElementById('lens-' + slot.lens).setAttribute('aria-pressed', String(slot.lens === mag));
+            }
 
             if (state.specimen === 'pond') {
                 dom.trackerMagBadge.textContent = mag === '60x' ? '60X 高速' : '  ' + mag.toUpperCase();
@@ -2803,13 +2853,17 @@
 
             // ── P 字母視野 ──
             if (state.specimen !== 'pond') {
-                const viewX = -state.slideX * target.scale;
-                const viewY = -state.slideY * target.scale;
+                // Use the same 280-unit optical field on every screen size.
+                const fieldScale = dom.eyepieceCircle.clientWidth / 280;
+                const viewX = -state.slideX * target.scale * fieldScale;
+                const viewY = -state.slideY * target.scale * fieldScale;
                 const specimenBrightness = 0.35 + lightLevel * 0.9;
                 const specimenContrast = 0.75 + lightLevel * 0.35;
                 dom.viewContainer.style.transform = `translate(${viewX}px,${viewY}px)`;
-                dom.specimenGraphic.style.filter = `blur(${blurAmount}px) brightness(${specimenBrightness}) contrast(${specimenContrast})`;
-                dom.specimenGraphic.style.transform = `scale(${target.scale})`;
+                // Apply blur outside the magnified glyph so 60X does not multiply it by 15.
+                dom.viewContainer.style.filter = `blur(${blurAmount * fieldScale}px)`;
+                dom.specimenGraphic.style.filter = `brightness(${specimenBrightness}) contrast(${specimenContrast})`;
+                dom.specimenGraphic.style.transform = `scale(${target.scale * fieldScale})`;
 
                 if (lightLevel < 0.2) {
                     dom.focusStatus.innerText = '光線很暗，物體幾乎看不清楚';
@@ -2863,13 +2917,13 @@
             if (state.mode === 'guided') {
                 const previousProgress = [...state.taskProgress];
                 state.taskProgress[0] = state.taskProgress[0] || isLight;
-                state.taskProgress[1] = state.taskProgress[1] || (state.taskProgress[0] && state.lens === '4x' && blurAmount < 3);
-                state.taskProgress[2] = state.taskProgress[2] || (state.taskProgress[1] && isInCenter);
-                state.taskProgress[3] = state.taskProgress[3] || (state.taskProgress[2] && state.lens !== '4x' && isClear);
+                state.taskProgress[1] = state.taskProgress[1] || (state.taskProgress[0] && isLight && state.lens === '4x' && blurAmount < 3);
+                state.taskProgress[2] = state.taskProgress[2] || (state.taskProgress[1] && isLight && state.lens === '4x' && isClear && isInCenter);
+                state.taskProgress[3] = state.taskProgress[3] || (state.taskProgress[2] && isLight && isInCenter && state.lens === '60x' && isClear);
                 if (state.taskProgress.some((done, i) => done !== previousProgress[i])) {
                     state.hintLevel = 0;
                     hideMissionFeedback();
-                    logAction('完成一項入門操作步驟', false);
+                    logAction('完成一項學生任務步驟', false);
                     // 找出剛完成的步驟（比對前後差異）
                     const stepNames = ['對光', '低倍對焦', '移至中央', '高倍細調'];
                     state.taskProgress.forEach((done, i) => {
@@ -3045,7 +3099,7 @@
 
         function moveSlide(dx, dy, shouldLog = true) {
             // 倍率越高，玻片操作必須越細，避免一次按鍵就越過中央追蹤圈。
-            const step = state.lens === '60x' ? 5 : state.lens === '10x' ? 10 : 15;
+            const step = state.lens === '60x' ? 1 : state.lens === '10x' ? 6 : 15;
             state.slideX = Math.max(-120, Math.min(120, state.slideX + dx * step));
             state.slideY = Math.max(-120, Math.min(120, state.slideY + dy * step));
             dom.posX.innerText = state.slideX;
@@ -3241,7 +3295,7 @@
         updateExperienceUI();
 
         // 若有池水模式，啟動迴圈（但初始為 letter，所以不啟動）
-        console.log('複式顯微鏡模擬器 v1.7 已啟動');
+        console.log('複式顯微鏡模擬器 v1.8.1 已啟動');
 
         // 頁面載入與正式開始分開記錄；simulation_start 由開始按鈕送出。
         let lastLayoutSnapshot = currentLayoutSnapshot();
@@ -3278,6 +3332,65 @@
                 });
                 lastLayoutSnapshot = nextLayout;
             }, 250);
+        });
+    </script>
+    <script>
+        // Move live controls, never clone them: all layouts share one instrument state.
+        const phoneQuery = matchMedia('(max-width: 719px)');
+        const shell = document.querySelector('.main-shell');
+        const phoneObserver = document.createElement('section');
+        phoneObserver.className = 'phone-observer';
+        phoneObserver.setAttribute('aria-label', '顯微鏡與目鏡視野');
+        const phoneTools = document.createElement('nav');
+        phoneTools.className = 'phone-tools';
+        phoneTools.setAttribute('aria-label', '儀器操作工具');
+        const controlGroups = [...document.querySelector('.instrument-controls').children];
+        const groups = {
+            focus: [controlGroups[1], controlGroups[2], controlGroups[3]],
+            light: [controlGroups[4]],
+            slide: [dom.slideControlPanel || document.getElementById('slide-control-panel')],
+            specimen: [controlGroups[0]]
+        };
+        for (const [key, elements] of Object.entries(groups)) {
+            elements.forEach(el => el.dataset.phoneGroup = key);
+        }
+        function selectPhoneTool(key) {
+            for (const [group, elements] of Object.entries(groups)) {
+                elements.forEach(el => el.classList.toggle('phone-selected', group === key));
+            }
+            phoneTools.querySelectorAll('button').forEach(button => {
+                button.setAttribute('aria-pressed', String(button.dataset.tool === key));
+            });
+        }
+        for (const [key, label] of [['light', '對光'], ['focus', '倍率／調焦'], ['slide', '移動玻片'], ['specimen', '標本']]) {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.dataset.tool = key;
+            button.textContent = label;
+            button.addEventListener('click', () => selectPhoneTool(key));
+            phoneTools.append(button);
+        }
+        shell.prepend(phoneObserver, phoneTools);
+        const mobileNodes = [document.querySelector('.machine-visual-stack'), dom.eyepieceCircle, document.querySelector('.view-focus-status')];
+        const anchors = mobileNodes.map(node => {
+            const anchor = document.createComment('desktop-position');
+            node.before(anchor);
+            return anchor;
+        });
+        function syncPhoneLayout() {
+            mobileNodes.forEach((node, index) => {
+                if (phoneQuery.matches) phoneObserver.append(node);
+                else anchors[index].after(node);
+            });
+            updateUI();
+        }
+        phoneQuery.addEventListener('change', syncPhoneLayout);
+        selectPhoneTool('light');
+        syncPhoneLayout();
+        new ResizeObserver(() => updateUI()).observe(dom.eyepieceCircle);
+        dom.missionHintBtn.addEventListener('click', () => {
+            const step = currentGuidedStepIndex();
+            if (state.mode === 'guided') selectPhoneTool(step === 0 ? 'light' : step === 2 ? 'slide' : 'focus');
         });
     </script>
 </body>
